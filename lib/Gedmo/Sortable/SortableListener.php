@@ -166,7 +166,7 @@ class SortableListener extends MappedEventSubscriber
             $newPosition = $meta->getReflectionProperty($config['position'])->getValue($object);
 
             if (null === $newPosition) {
-                $newPosition = -1;
+                $newPosition = $config['startWith'] - 1;
             }
 
             // Get groups
@@ -181,27 +181,27 @@ class SortableListener extends MappedEventSubscriber
             }
 
             // Compute position if it is negative
-            if ($newPosition < 0) {
-                $newPosition += $this->maxPositions[$hash] + 2; // position == -1 => append at end of list
-                if ($newPosition < 0) {
-                    $newPosition = 0;
+            if ($newPosition < $config['startWith']) {
+                $newPosition += $this->maxPositions[$hash] + 2; // position == -1 => append at end of list // Todo: use incrementby
+                if ($newPosition < $config['startWith']) {
+                    $newPosition = $config['startWith'];
                 }
             }
 
             // Set position to max position if it is too big
-            $newPosition = min(array($this->maxPositions[$hash] + 1, $newPosition));
+            $newPosition = min(array($this->maxPositions[$hash] + 1, $newPosition)); // Todo: use increment by for + 1
 
             // Compute relocations
             // New inserted entities should not be relocated by position update, so we exclude it.
             // Otherwise they could be relocated unintentionally.
-            $relocation = [$hash, $config['useObjectClass'], $config['position'], $groups, $newPosition, -1, +1, [$object]];
+            $relocation = [$hash, $config['useObjectClass'], $config['position'], $groups, $newPosition, -1, +1, [$object]]; // Todo: use increment by for +1 and -1
 
             // Apply existing relocations
-            $applyDelta = 0;
+            $applyDelta = $config['startWith'];
             if (isset($this->relocations[$hash])) {
                 foreach ($this->relocations[$hash]['deltas'] as $delta) {
                     if ($delta['start'] <= $newPosition
-                        && ($delta['stop'] > $newPosition || $delta['stop'] < 0)) {
+                        && ($delta['stop'] > $newPosition || $delta['stop'] < $config['startWith'])) {
                         $applyDelta += $delta['delta'];
                     }
                 }
@@ -212,7 +212,7 @@ class SortableListener extends MappedEventSubscriber
             call_user_func_array(array($this, 'addRelocation'), $relocation);
 
             // Set new position
-            if ($old < 0 || null === $old) {
+            if ($old < $config['startWith'] || null === $old) {
                 $meta->getReflectionProperty($config['position'])->setValue($object, $newPosition);
                 $ea->recomputeSingleObjectChangeSet($uow, $meta, $object);
             }
@@ -264,7 +264,7 @@ class SortableListener extends MappedEventSubscriber
                     $oldGroups,
                     $oldPosition + 1,
                     $this->maxPositions[$oldHash] + 1,
-                    -1
+                    $config['startWith'] - 1
                 );
                 $groupHasChanged = true;
             }
@@ -278,17 +278,17 @@ class SortableListener extends MappedEventSubscriber
             }
 
             if (array_key_exists($config['position'], $changeSet)) {
-                if ($changed && -1 === $this->maxPositions[$hash]) {
+                if ($changed && $config['startWith'] - 1 === $this->maxPositions[$hash]) {
                     // position has changed
                     // the group of element has changed
                     // and the target group has no children before
-                    $oldPosition = -1;
-                    $newPosition = -1;
+                    $oldPosition = $config['startWith'] - 1;
+                    $newPosition = $config['startWith'] - 1;
                 } else {
                     // position was manually updated
                     $oldPosition = $changeSet[$config['position']][0];
                     $newPosition = $changeSet[$config['position']][1] === null
-                        ? -1
+                        ? $config['startWith'] - 1
                         : $changeSet[$config['position']][1];
                     $changed = $changed || $oldPosition != $newPosition;
                 }
@@ -297,26 +297,26 @@ class SortableListener extends MappedEventSubscriber
             }
 
             if ($groupHasChanged) {
-                $oldPosition = -1;
+                $oldPosition = $config['startWith'] - 1;
             }
             if (!$changed) {
                 continue;
             }
 
             // Compute position if it is negative
-            if ($newPosition < 0) {
-                if ($oldPosition === -1) {
-                    $newPosition += $this->maxPositions[$hash] + 2; // position == -1 => append at end of list
+            if ($newPosition < $config['startWith']) {
+                if ($oldPosition === $config['startWith'] - 1) {
+                    $newPosition += $this->maxPositions[$hash] + 2; // position == -1 => append at end of list // Todo: use increment by
                 } else {
-                    $newPosition += $this->maxPositions[$hash] + 1; // position == -1 => append at end of list
+                    $newPosition += $this->maxPositions[$hash] + 1; // position == -1 => append at end of list // Todo: use increment by
                 }
 
-                if ($newPosition < 0) {
-                    $newPosition = 0;
+                if ($newPosition < $config['startWith']) {
+                    $newPosition = $config['startWith'];
                 }
             } elseif ($newPosition > $this->maxPositions[$hash]) {
                 if ($groupHasChanged) {
-                    $newPosition = $this->maxPositions[$hash] + 1;
+                    $newPosition = $this->maxPositions[$hash] + 1; // Todo: use increment by
                 } else {
                     $newPosition = $this->maxPositions[$hash];
                 }
@@ -340,21 +340,21 @@ class SortableListener extends MappedEventSubscriber
             |--node1--|--node3--|--node4--|--node2--|--node5--|
             */
             $relocation = null;
-            if ($oldPosition === -1) {
+            if ($oldPosition === $config['startWith'] - 1) {
                 // special case when group changes
-                $relocation = [$hash, $config['useObjectClass'], $config['position'], $groups, $newPosition, -1, +1];
+                $relocation = [$hash, $config['useObjectClass'], $config['position'], $groups, $newPosition, -1, +1]; // Todo: Use increment by
             } elseif ($newPosition < $oldPosition) {
-                $relocation = [$hash, $config['useObjectClass'], $config['position'], $groups, $newPosition, $oldPosition, +1];
+                $relocation = [$hash, $config['useObjectClass'], $config['position'], $groups, $newPosition, $oldPosition, +1]; // Todo: use increment by
             } elseif ($newPosition > $oldPosition) {
-                $relocation = [$hash, $config['useObjectClass'], $config['position'], $groups, $oldPosition + 1, $newPosition + 1, -1];
+                $relocation = [$hash, $config['useObjectClass'], $config['position'], $groups, $oldPosition + 1, $newPosition + 1, -1]; // Todo: use increment by
             }
 
             // Apply existing relocations
-            $applyDelta = 0;
+            $applyDelta = $config['startWith'];
             if (isset($this->relocations[$hash])) {
                 foreach ($this->relocations[$hash]['deltas'] as $delta) {
                     if ($delta['start'] <= $newPosition
-                        && ($delta['stop'] > $newPosition || $delta['stop'] < 0)) {
+                        && ($delta['stop'] > $newPosition || $delta['stop'] < $config['startWith'])) {
                         $applyDelta += $delta['delta'];
                     }
                 }
@@ -397,7 +397,7 @@ class SortableListener extends MappedEventSubscriber
             }
 
             // Add relocation
-            $this->addRelocation($hash, $config['useObjectClass'], $config['position'], $groups, $position, -1, -1);
+            $this->addRelocation($hash, $config['useObjectClass'], $config['position'], $groups, $position, $config['startWith'] - 1, $config['startWith'] - 1);
         }
     }
 
@@ -416,7 +416,7 @@ class SortableListener extends MappedEventSubscriber
             $config = $this->getConfiguration($em, $relocation['name']);
 
             foreach ($relocation['deltas'] as $delta) {
-                if ($delta['start'] > $this->maxPositions[$hash] || $delta['delta'] == 0) {
+                if ($delta['start'] > $this->maxPositions[$hash] || $delta['delta'] == $config['startWith']) {
                     continue;
                 }
                 $ea->updatePositions($relocation, $delta, $config['sortables'][$relocation['field']]);
@@ -438,7 +438,7 @@ class SortableListener extends MappedEventSubscriber
             $config = $config['sortables'][$relocation['field']];
 
             foreach ($relocation['deltas'] as $delta) {
-                if ($delta['start'] > $this->maxPositions[$hash] || $delta['delta'] == 0) {
+                if ($delta['start'] > $this->maxPositions[$hash] || $delta['delta'] == $config['startWith']) {
                     continue;
                 }
 
@@ -474,7 +474,7 @@ class SortableListener extends MappedEventSubscriber
                         $oid = spl_object_hash($object);
                         $pos = $meta->getReflectionProperty($config['position'])->getValue($object);
                         $matches = $pos >= $delta['start'];
-                        $matches = $matches && ($delta['stop'] <= 0 || $pos < $delta['stop']);
+                        $matches = $matches && ($delta['stop'] <= $config['startWith'] || $pos < $delta['stop']);
                         $value = reset($relocation['groups']);
                         while ($matches && ($group = key($relocation['groups']))) {
                             $gr = $meta->getReflectionProperty($group)->getValue($object);
@@ -541,13 +541,13 @@ class SortableListener extends MappedEventSubscriber
         // see issue #226
         foreach ($groups as $val) {
             if (is_object($val) && ($uow->isScheduledForInsert($val) || !$em->getMetadataFactory()->isTransient(ClassUtils::getClass($val)) && $uow::STATE_MANAGED !== $ea->getObjectState($uow, $val))) {
-                return -1;
+                return $config['startWith'] - 1;
             }
         }
 
         $maxPos = $ea->getMaxPosition($config, $meta, $groups);
         if (null === $maxPos) {
-            $maxPos = -1;
+            $maxPos = $config['startWith'] - 1;
         }
 
         return intval($maxPos);

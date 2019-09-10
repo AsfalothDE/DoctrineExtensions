@@ -91,22 +91,22 @@ final class ORM extends BaseAdapterORM implements SortableAdapter
 
     public function updatePositions($relocation, $delta, $config)
     {
-        $sign = $delta['delta'] < 0 ? "-" : "+";
+        $sign = $delta['delta'] < $config['startWith'] ? "-" : "+";
         $absDelta = abs($delta['delta']);
         $dql = "UPDATE {$relocation['name']} n";
         $dql .= " SET n.{$config['position']} = n.{$config['position']} {$sign} {$absDelta}";
         $dql .= " WHERE n.{$config['position']} >= {$delta['start']}";
         // if not null, false or 0
-        if ($delta['stop'] > 0) {
+        if ($delta['stop'] > $config['startWith']) {
             $dql .= " AND n.{$config['position']} < {$delta['stop']}";
         }
-        $i = -1;
+        $i = $config['startWith'] - 1; // Todo: substract incrementBy value?
         $params = array();
         foreach ($relocation['groups'] as $group => $value) {
             if (null === $value) {
                 $dql .= " AND n.{$group} IS NULL";
             } else {
-                $dql .= " AND n.{$group} = :val___" . (++$i);
+                $dql .= " AND n.{$group} = :val___" . (++$i); // Todo: incrementby instead of ++?
                 $params['val___' . $i] = $value;
             }
         }

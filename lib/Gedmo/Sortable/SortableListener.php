@@ -182,7 +182,8 @@ class SortableListener extends MappedEventSubscriber
 
             // Compute position if it is negative
             if ($newPosition < $config['startWith']) {
-                $newPosition += $this->maxPositions[$hash] + 2; // position == -1 => append at end of list // Todo: use incrementby
+                $newPosition += $this->maxPositions[$hash];
+                $newPosition += 2 - $config['startWith']; // position == -1 => append at end of list // Todo: use incrementby
                 if ($newPosition < $config['startWith']) {
                     $newPosition = $config['startWith'];
                 }
@@ -197,7 +198,7 @@ class SortableListener extends MappedEventSubscriber
             $relocation = [$hash, $config['useObjectClass'], $config['position'], $groups, $newPosition, -1, +1, [$object]]; // Todo: use increment by for +1 and -1
 
             // Apply existing relocations
-            $applyDelta = $config['startWith'];
+            $applyDelta = 0;
             if (isset($this->relocations[$hash])) {
                 foreach ($this->relocations[$hash]['deltas'] as $delta) {
                     if ($delta['start'] <= $newPosition
@@ -416,7 +417,7 @@ class SortableListener extends MappedEventSubscriber
             $config = $this->getConfiguration($em, $relocation['name']);
 
             foreach ($relocation['deltas'] as $delta) {
-                if ($delta['start'] > $this->maxPositions[$hash] || $delta['delta'] == $config['startWith']) {
+                if ($delta['start'] > $this->maxPositions[$hash] || $delta['delta'] == 0) {
                     continue;
                 }
                 $ea->updatePositions($relocation, $delta, $config['sortables'][$relocation['field']]);

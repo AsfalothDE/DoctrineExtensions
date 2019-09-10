@@ -62,9 +62,21 @@ class Xml extends BaseXml
                         }
                     }
 
+                    $startWith = 0;
+                    if ($this->_isAttributeSet($sortable, 'startWith')) {
+                        $startWith = (string) $this->_getAttribute($sortable, 'startWith');
+                    }
+
+                    $incrementBy = 1;
+                    if ($this->_isAttributeSet($sortable, 'incrementBy')) {
+                        $incrementBy = (string) $this->_getAttribute($sortable, 'incrementBy');
+                    }
+
                     $config['sortables'][$field] = [
                         'position' => $field,
                         'groups' => $groups,
+                        'startWith' => $startWith,
+                        'incrementBy' => $incrementBy,
                         'useObjectClass' => $meta->name
                     ];
                 }

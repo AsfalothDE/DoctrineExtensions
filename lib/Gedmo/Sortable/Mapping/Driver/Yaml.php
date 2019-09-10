@@ -62,9 +62,21 @@ class Yaml extends File implements Driver
                         }
                     }
 
+                    $startWith = 0;
+                    if (isset($fieldMapping['gedmo']['sortable']['startWith'])) {
+                        $startWith = $fieldMapping['gedmo']['sortable']['startWith'];
+                    }
+
+                    $incrementBy = 1;
+                    if (isset($fieldMapping['gedmo']['sortable']['incrementBy'])) {
+                        $incrementBy = $fieldMapping['gedmo']['sortable']['incrementBy'];
+                    }
+
                     $config['sortables'][$field] = [
                         'position' => $field,
                         'groups' => $groups,
+                        'startWith' => $startWith,
+                        'incrementBy' => $incrementBy,
                         'useObjectClass' => $meta->name
                     ];
                 }

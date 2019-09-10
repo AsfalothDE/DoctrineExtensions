@@ -17,7 +17,7 @@ interface Sortable
     /**
      * example:
      *
-     * @gedmo:Sortable(groups={"category"})
+     * @gedmo:Sortable(groups={"category"}, startWith=1, incrementBy=10)
      * @Column(type="int")
      * $position
      *

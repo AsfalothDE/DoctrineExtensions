@@ -67,6 +67,8 @@ class Annotation extends AbstractAnnotationDriver
                 $config['sortables'][$field] = [
                     'position' => $field,
                     'groups' => $sortable->groups,
+                    'startWith' => $sortable->startWith,
+                    'incrementBy' => $sortable->incrementBy,
                     'useObjectClass' => $meta->name
                 ];
             }

@@ -19,4 +19,14 @@ final class Sortable extends Annotation
      * @var array<string>
      */
     public $groups = [];
+
+    /**
+     * @var int number to start with
+     */
+    public $startWith = 0;
+
+    /**
+     * @var int Increment counter by
+     */
+    public $incrementBy = 1;
 }

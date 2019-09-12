@@ -99,7 +99,7 @@ class SortableDocumentGroupTest extends BaseTestCaseMongoODM
 
         for ($i=0; $i < 2; $i++) {
             $expected = ($i+1 == 1) ? $i+1 : 0;
-            $this->assertEquals($expected, $kids[$i]->getPosition());
+            $this->assertSame($expected, $kids[$i]->getPosition());
         }
     }
 
@@ -144,7 +144,7 @@ class SortableDocumentGroupTest extends BaseTestCaseMongoODM
         
         for ($i=0; $i < 3; $i++) {
             $expected = ($i+1 < 3) ? $i+1 : 0;
-            $this->assertEquals($expected, $posts[$i]->getPosition());
+            $this->assertSame($expected, $posts[$i]->getPosition());
         }
     }
 
@@ -174,7 +174,7 @@ class SortableDocumentGroupTest extends BaseTestCaseMongoODM
         $this->assertCount(2, $posts);
         
         for ($i=0; $i < 2; $i++) {
-            $this->assertEquals($i, $posts[$i]->getPosition());
+            $this->assertSame($i, $posts[$i]->getPosition());
         }
     }
 }

@@ -57,8 +57,8 @@ class SortableMultipleTest extends BaseTestCaseORM
         $this->em->persist($book);
         $this->em->flush();
 
-        $this->assertEquals(0, $book->getPositionByAuthor());
-        $this->assertEquals(0, $book->getPositionByCategory());
+        $this->assertSame(0, $book->getPositionByAuthor());
+        $this->assertSame(0, $book->getPositionByCategory());
     }
 
     private function get3Books()
@@ -107,26 +107,26 @@ class SortableMultipleTest extends BaseTestCaseORM
          */
         extract($this->get3Books());
 
-        $this->assertEquals(0, $book1->getPositionByAuthor());
-        $this->assertEquals(1, $book2->getPositionByAuthor());
-        $this->assertEquals(2, $book3->getPositionByAuthor());
+        $this->assertSame(0, $book1->getPositionByAuthor());
+        $this->assertSame(1, $book2->getPositionByAuthor());
+        $this->assertSame(2, $book3->getPositionByAuthor());
 
-        $this->assertEquals(0, $book1->getPositionByCategory());
-        $this->assertEquals(1, $book2->getPositionByCategory());
-        $this->assertEquals(2, $book3->getPositionByCategory());
+        $this->assertSame(0, $book1->getPositionByCategory());
+        $this->assertSame(1, $book2->getPositionByCategory());
+        $this->assertSame(2, $book3->getPositionByCategory());
 
         $book3->setPositionByAuthor(0);
         $this->em->flush();
 
         // author position should update
-        $this->assertEquals(1, $book1->getPositionByAuthor());
-        $this->assertEquals(2, $book2->getPositionByAuthor());
-        $this->assertEquals(0, $book3->getPositionByAuthor());
+        $this->assertSame(1, $book1->getPositionByAuthor());
+        $this->assertSame(2, $book2->getPositionByAuthor());
+        $this->assertSame(0, $book3->getPositionByAuthor());
 
         // category position should be unchanged
-        $this->assertEquals(0, $book1->getPositionByCategory());
-        $this->assertEquals(1, $book2->getPositionByCategory());
-        $this->assertEquals(2, $book3->getPositionByCategory());
+        $this->assertSame(0, $book1->getPositionByCategory());
+        $this->assertSame(1, $book2->getPositionByCategory());
+        $this->assertSame(2, $book3->getPositionByCategory());
     }
 
     /**
@@ -143,25 +143,25 @@ class SortableMultipleTest extends BaseTestCaseORM
          */
         extract($this->get3Books());
 
-        $this->assertEquals(0, $book1->getPositionByAuthor());
-        $this->assertEquals(1, $book2->getPositionByAuthor());
-        $this->assertEquals(2, $book3->getPositionByAuthor());
+        $this->assertSame(0, $book1->getPositionByAuthor());
+        $this->assertSame(1, $book2->getPositionByAuthor());
+        $this->assertSame(2, $book3->getPositionByAuthor());
 
-        $this->assertEquals(0, $book1->getPositionByCategory());
-        $this->assertEquals(1, $book2->getPositionByCategory());
-        $this->assertEquals(2, $book3->getPositionByCategory());
+        $this->assertSame(0, $book1->getPositionByCategory());
+        $this->assertSame(1, $book2->getPositionByCategory());
+        $this->assertSame(2, $book3->getPositionByCategory());
 
         $book3->setPositionByAuthor(0);
         $book3->setPositionByCategory(0);
         $this->em->flush();
 
-        $this->assertEquals(1, $book1->getPositionByAuthor());
-        $this->assertEquals(2, $book2->getPositionByAuthor());
-        $this->assertEquals(0, $book3->getPositionByAuthor());
+        $this->assertSame(1, $book1->getPositionByAuthor());
+        $this->assertSame(2, $book2->getPositionByAuthor());
+        $this->assertSame(0, $book3->getPositionByAuthor());
 
-        $this->assertEquals(1, $book1->getPositionByCategory());
-        $this->assertEquals(2, $book2->getPositionByCategory());
-        $this->assertEquals(0, $book3->getPositionByCategory());
+        $this->assertSame(1, $book1->getPositionByCategory());
+        $this->assertSame(2, $book2->getPositionByCategory());
+        $this->assertSame(0, $book3->getPositionByCategory());
     }
 
     /**
@@ -178,36 +178,36 @@ class SortableMultipleTest extends BaseTestCaseORM
          */
         extract($this->get3Books());
 
-        $this->assertEquals(0, $book1->getPositionByAuthor());
-        $this->assertEquals(1, $book2->getPositionByAuthor());
-        $this->assertEquals(2, $book3->getPositionByAuthor());
+        $this->assertSame(0, $book1->getPositionByAuthor());
+        $this->assertSame(1, $book2->getPositionByAuthor());
+        $this->assertSame(2, $book3->getPositionByAuthor());
 
-        $this->assertEquals(0, $book1->getPositionByCategory());
-        $this->assertEquals(1, $book2->getPositionByCategory());
-        $this->assertEquals(2, $book3->getPositionByCategory());
+        $this->assertSame(0, $book1->getPositionByCategory());
+        $this->assertSame(1, $book2->getPositionByCategory());
+        $this->assertSame(2, $book3->getPositionByCategory());
 
         $book3->setAuthor(null);
         $this->em->flush();
 
-        $this->assertEquals(0, $book1->getPositionByAuthor());
-        $this->assertEquals(1, $book2->getPositionByAuthor());
-        $this->assertEquals(0, $book3->getPositionByAuthor());
+        $this->assertSame(0, $book1->getPositionByAuthor());
+        $this->assertSame(1, $book2->getPositionByAuthor());
+        $this->assertSame(0, $book3->getPositionByAuthor());
 
         // should remain unchanged
-        $this->assertEquals(0, $book1->getPositionByCategory());
-        $this->assertEquals(1, $book2->getPositionByCategory());
-        $this->assertEquals(2, $book3->getPositionByCategory());
+        $this->assertSame(0, $book1->getPositionByCategory());
+        $this->assertSame(1, $book2->getPositionByCategory());
+        $this->assertSame(2, $book3->getPositionByCategory());
 
         $book3->setCategory(null);
         $this->em->flush();
 
-        $this->assertEquals(0, $book1->getPositionByAuthor());
-        $this->assertEquals(1, $book2->getPositionByAuthor());
-        $this->assertEquals(0, $book3->getPositionByAuthor());
+        $this->assertSame(0, $book1->getPositionByAuthor());
+        $this->assertSame(1, $book2->getPositionByAuthor());
+        $this->assertSame(0, $book3->getPositionByAuthor());
 
-        $this->assertEquals(0, $book1->getPositionByCategory());
-        $this->assertEquals(1, $book2->getPositionByCategory());
-        $this->assertEquals(0, $book3->getPositionByCategory());
+        $this->assertSame(0, $book1->getPositionByCategory());
+        $this->assertSame(1, $book2->getPositionByCategory());
+        $this->assertSame(0, $book3->getPositionByCategory());
     }
 
     /**
@@ -224,46 +224,46 @@ class SortableMultipleTest extends BaseTestCaseORM
          */
         extract($this->get3Books());
 
-        $this->assertEquals(0, $book1->getPositionByAuthor());
-        $this->assertEquals(1, $book2->getPositionByAuthor());
-        $this->assertEquals(2, $book3->getPositionByAuthor());
+        $this->assertSame(0, $book1->getPositionByAuthor());
+        $this->assertSame(1, $book2->getPositionByAuthor());
+        $this->assertSame(2, $book3->getPositionByAuthor());
 
-        $this->assertEquals(0, $book1->getPositionByCategory());
-        $this->assertEquals(1, $book2->getPositionByCategory());
-        $this->assertEquals(2, $book3->getPositionByCategory());
+        $this->assertSame(0, $book1->getPositionByCategory());
+        $this->assertSame(1, $book2->getPositionByCategory());
+        $this->assertSame(2, $book3->getPositionByCategory());
 
         $book3->setPublisher('penguin');
         $this->em->flush();
 
-        $this->assertEquals(0, $book1->getPositionByAuthor());
-        $this->assertEquals(1, $book2->getPositionByAuthor());
-        $this->assertEquals(0, $book3->getPositionByAuthor());
+        $this->assertSame(0, $book1->getPositionByAuthor());
+        $this->assertSame(1, $book2->getPositionByAuthor());
+        $this->assertSame(0, $book3->getPositionByAuthor());
 
-        $this->assertEquals(0, $book1->getPositionByCategory());
-        $this->assertEquals(1, $book2->getPositionByCategory());
-        $this->assertEquals(0, $book3->getPositionByCategory());
+        $this->assertSame(0, $book1->getPositionByCategory());
+        $this->assertSame(1, $book2->getPositionByCategory());
+        $this->assertSame(0, $book3->getPositionByCategory());
 
         $book2->setPublisher('penguin');
         $this->em->flush();
 
-        $this->assertEquals(0, $book1->getPositionByAuthor());
-        $this->assertEquals(1, $book2->getPositionByAuthor());
-        $this->assertEquals(0, $book3->getPositionByAuthor());
+        $this->assertSame(0, $book1->getPositionByAuthor());
+        $this->assertSame(1, $book2->getPositionByAuthor());
+        $this->assertSame(0, $book3->getPositionByAuthor());
 
-        $this->assertEquals(0, $book1->getPositionByCategory());
-        $this->assertEquals(1, $book2->getPositionByCategory());
-        $this->assertEquals(0, $book3->getPositionByCategory());
+        $this->assertSame(0, $book1->getPositionByCategory());
+        $this->assertSame(1, $book2->getPositionByCategory());
+        $this->assertSame(0, $book3->getPositionByCategory());
 
         $book1->setPublisher('penguin');
         $this->em->flush();
 
-        $this->assertEquals(0, $book1->getPositionByAuthor());
-        $this->assertEquals(2, $book2->getPositionByAuthor());
-        $this->assertEquals(1, $book3->getPositionByAuthor());
+        $this->assertSame(0, $book1->getPositionByAuthor());
+        $this->assertSame(2, $book2->getPositionByAuthor());
+        $this->assertSame(1, $book3->getPositionByAuthor());
 
-        $this->assertEquals(0, $book1->getPositionByCategory());
-        $this->assertEquals(2, $book2->getPositionByCategory());
-        $this->assertEquals(1, $book3->getPositionByCategory());
+        $this->assertSame(0, $book1->getPositionByCategory());
+        $this->assertSame(2, $book2->getPositionByCategory());
+        $this->assertSame(1, $book3->getPositionByCategory());
     }
 
     protected function getUsedEntityFixtures()

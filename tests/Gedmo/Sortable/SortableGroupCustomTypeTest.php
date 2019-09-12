@@ -62,7 +62,7 @@ class SortableGroupCustomTypeTest extends BaseTestCaseORM
         $this->em->persist($one);
         $this->em->flush();
 
-        $this->assertEquals(4,$one->getPosition());
+        $this->assertSame(4,$one->getPosition());
 
     }
 

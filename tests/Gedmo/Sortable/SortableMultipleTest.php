@@ -191,7 +191,7 @@ class SortableMultipleTest extends BaseTestCaseORM
 
         $this->assertSame(0, $book1->getPositionByAuthor());
         $this->assertSame(1, $book2->getPositionByAuthor());
-        $this->assertSame(null, $book3->getPositionByAuthor());
+        $this->assertSame(0, $book3->getPositionByAuthor());
 
         // should remain unchanged
         $this->assertSame(0, $book1->getPositionByCategory());
@@ -203,11 +203,11 @@ class SortableMultipleTest extends BaseTestCaseORM
 
         $this->assertSame(0, $book1->getPositionByAuthor());
         $this->assertSame(1, $book2->getPositionByAuthor());
-        $this->assertSame(null, $book3->getPositionByAuthor());
+        $this->assertSame(0, $book3->getPositionByAuthor());
 
         $this->assertSame(0, $book1->getPositionByCategory());
         $this->assertSame(1, $book2->getPositionByCategory());
-        $this->assertSame(null, $book3->getPositionByCategory());
+        $this->assertSame(0, $book3->getPositionByCategory());
     }
 
     /**

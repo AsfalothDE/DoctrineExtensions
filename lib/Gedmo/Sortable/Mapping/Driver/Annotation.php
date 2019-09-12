@@ -69,6 +69,7 @@ class Annotation extends AbstractAnnotationDriver
                     'groups' => $sortable->groups,
                     'startWith' => $sortable->startWith,
                     'incrementBy' => $sortable->incrementBy,
+                    'sortNullGroup' => $sortable->sortNullGroup,
                     'useObjectClass' => $meta->name
                 ];
             }

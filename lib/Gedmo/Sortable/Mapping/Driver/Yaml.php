@@ -72,11 +72,17 @@ class Yaml extends File implements Driver
                         $incrementBy = $fieldMapping['gedmo']['sortable']['incrementBy'];
                     }
 
+                    $sortNullGroup = true;
+                    if (isset($fieldMapping['gedmo']['sortable']['sortNullGroup'])) {
+                        $sortNullGroup = $fieldMapping['gedmo']['sortable']['sortNullGroup'];
+                    }
+
                     $config['sortables'][$field] = [
                         'position' => $field,
                         'groups' => $groups,
                         'startWith' => $startWith,
                         'incrementBy' => $incrementBy,
+                        'sortNullGroup' => $sortNullGroup,
                         'useObjectClass' => $meta->name
                     ];
                 }

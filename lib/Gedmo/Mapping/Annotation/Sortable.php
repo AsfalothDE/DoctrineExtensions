@@ -29,4 +29,9 @@ final class Sortable extends Annotation
      * @var int Increment counter by
      */
     public $incrementBy = 1;
+
+    /**
+     * @var bool Should a group with null value be sorted
+     */
+    public $sortNullGroup = true;
 }

@@ -72,11 +72,17 @@ class Xml extends BaseXml
                         $incrementBy = (string) $this->_getAttribute($sortable, 'incrementBy');
                     }
 
+                    $sortNullGroup = true;
+                    if ($this->_isAttributeSet($sortable, 'sortNullGroup')) {
+                        $sortNullGroup = (bool) $this->_getAttribute($sortable, 'sortNullGroup');
+                    }
+
                     $config['sortables'][$field] = [
                         'position' => $field,
                         'groups' => $groups,
                         'startWith' => $startWith,
                         'incrementBy' => $incrementBy,
+                        'sortNullGroup' => $sortNullGroup,
                         'useObjectClass' => $meta->name
                     ];
                 }

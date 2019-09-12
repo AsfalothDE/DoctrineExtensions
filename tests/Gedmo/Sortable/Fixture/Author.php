@@ -24,12 +24,13 @@ class Author
 
     /**
      * @ORM\ManyToOne(targetEntity="Paper", inversedBy="authors")
+     * @ORM\JoinColumn(nullable=true)
      */
     private $paper;
 
     /**
      * @Gedmo\Sortable(groups={"paper"})
-     * @ORM\Column(name="position", type="integer")
+     * @ORM\Column(name="position", type="integer", nullable=true)
      */
     private $position;
 

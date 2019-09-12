@@ -24,7 +24,7 @@ class Book
 
     /**
      * @Gedmo\Sortable(groups={"category", "publisher"})
-     * @ORM\Column(name="position_by_category", type="integer")
+     * @ORM\Column(name="position_by_category", type="integer", nullable=true)
      */
     private $positionByCategory;
 
@@ -35,7 +35,7 @@ class Book
 
     /**
      * @Gedmo\Sortable(groups={"author", "publisher"})
-     * @ORM\Column(name="position_by_author", type="integer")
+     * @ORM\Column(name="position_by_author", type="integer", nullable=true)
      */
     private $positionByAuthor;
 

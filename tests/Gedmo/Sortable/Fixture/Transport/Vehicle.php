@@ -26,6 +26,7 @@ class Vehicle
 
     /**
      * @ORM\ManyToOne(targetEntity="Engine")
+     * @ORM\JoinColumn(nullable=true)
      */
     private $engine;
 
@@ -36,7 +37,7 @@ class Vehicle
 
     /**
      * @Gedmo\Sortable(groups={"engine"})
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", nullable=true)
      */
     private $sortByEngine;
 

@@ -24,7 +24,22 @@ final class ORM extends BaseAdapterORM implements SortableAdapter
         $qb = $em->createQueryBuilder();
         $qb->select('MAX(n.' . $config['position'] . ')')
             ->from($config['useObjectClass'], 'n');
-        $this->addGroupWhere($qb, $groups, $meta);
+
+        $addGroupWhere = $this->addGroupWhere($groups, $meta);
+
+        if ($groups && empty($addGroupWhere)) {
+            // no need to run query when the group to query by has the value null
+            return false;
+        }
+
+        foreach ($addGroupWhere as $where => $parameter) {
+            $qb->andWhere($where);
+            if ($parameter) {
+                list($key, $value, $type) = $parameter;
+                $qb->setParameter($key, $value, $type);
+            }
+        }
+
         $query = $qb->getQuery();
         $query->useQueryCache(false);
         $query->useResultCache(false);
@@ -33,18 +48,21 @@ final class ORM extends BaseAdapterORM implements SortableAdapter
         return $res[0][1];
     }
 
-    private function addGroupWhere(QueryBuilder $qb, $groups, $meta)
+    private function addGroupWhere($groups, $meta)
     {
+        $groupWhere = [];
         $i = 1;
         foreach ($groups as $group => $value) {
             if (null === $value) {
-                $qb->andWhere($qb->expr()->isNull('n.' . $group));
+                // Don't sort when group value is null
+                continue;
             } else {
-                $qb->andWhere('n.' . $group . ' = :group__' . $i);
-                $qb->setParameter('group__' . $i, $this->getGroupValue($value), $this->getGroupType($group, $value, $meta));
+                $groupWhere['n.' . $group . ' = :group__' . $i] = ['group__' . $i, $this->getGroupValue($value), $this->getGroupType($group, $value, $meta)];
             }
             $i++;
         }
+
+        return $groupWhere;
     }
 
     /**
@@ -104,7 +122,8 @@ final class ORM extends BaseAdapterORM implements SortableAdapter
         $params = array();
         foreach ($relocation['groups'] as $group => $value) {
             if (null === $value) {
-                $dql .= " AND n.{$group} IS NULL";
+                // no need to run query when the group to query by has the value null
+                continue;
             } else {
                 $dql .= " AND n.{$group} = :val___" . (++$i); // Todo: incrementby instead of ++?
                 $params['val___' . $i] = $value;

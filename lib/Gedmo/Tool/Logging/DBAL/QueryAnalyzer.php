@@ -189,7 +189,7 @@ class QueryAnalyzer implements SQLLogger
      */
     private function generateSql($sql, $params, $types)
     {
-        if (!count($params)) {
+        if (!$params || !count($params)) {
             return $sql;
         }
         $converted = $this->getConvertedParams($params, $types);

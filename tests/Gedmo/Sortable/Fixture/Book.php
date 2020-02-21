@@ -45,6 +45,18 @@ class Book
     private $publisher;
 
     /**
+     * @ORM\ManyToOne(targetEntity="Series")
+     * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
+     */
+    private $series;
+
+    /**
+     * @ORM\Column(name="volume", type="integer", nullable=true)
+     * @Gedmo\Sortable(groups={"series"}, startWith=1, sortNullGroup=false)
+     */
+    private $volume;
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -130,5 +142,43 @@ class Book
     public function setPublisher($publisher)
     {
         $this->publisher = $publisher;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSeries()
+    {
+        return $this->series;
+    }
+
+    /**
+     * @param mixed $series
+     *
+     * @return Book
+     */
+    public function setSeries($series)
+    {
+        $this->series = $series;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getVolume()
+    {
+        return $this->volume;
+    }
+
+    /**
+     * @param mixed $volume
+     *
+     * @return Book
+     */
+    public function setVolume($volume)
+    {
+        $this->volume = $volume;
+        return $this;
     }
 }

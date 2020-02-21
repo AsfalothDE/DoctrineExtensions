@@ -311,7 +311,8 @@ class SortableListener extends MappedEventSubscriber
                 // Compute position if it is negative
                 if ($newPosition < $config['startWith']) {
                     if ($oldPosition === $config['startWith'] - 1) {
-                        $newPosition += $this->maxPositions[$hash] + 2; // position == -1 => append at end of list // Todo: use increment by
+                        $newPosition += $this->maxPositions[$hash];
+                        $newPosition += 2 - $config['startWith']; // position == -1 => append at end of list // Todo: use incrementby
                     } else {
                         $newPosition += $this->maxPositions[$hash] + 1; // position == -1 => append at end of list // Todo: use increment by
                     }

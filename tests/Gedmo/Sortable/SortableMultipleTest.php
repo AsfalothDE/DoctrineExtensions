@@ -5,6 +5,7 @@ namespace Gedmo\Sortable;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Sortable\Fixture\Book;
+use Sortable\Fixture\Series;
 use Tool\BaseTestCaseORM;
 use Sortable\Fixture\Node;
 use Sortable\Fixture\Item;
@@ -21,6 +22,7 @@ use Sortable\Fixture\CustomerType;
  */
 class SortableMultipleTest extends BaseTestCaseORM
 {
+    const SERIES = 'Sortable\\Fixture\\Series';
     const CATEGORY = 'Sortable\\Fixture\\Category';
     const AUTHOR = 'Sortable\\Fixture\\Author';
     const BOOK = 'Sortable\\Fixture\\Book';
@@ -60,6 +62,56 @@ class SortableMultipleTest extends BaseTestCaseORM
         $this->assertSame(0, $book->getPositionByAuthor());
         $this->assertSame(0, $book->getPositionByCategory());
     }
+
+    public function testShouldStartWithGivenStartValueWhenNullableIsTrue()
+    {
+        /**
+         * @var Author $author
+         * @var Category $category
+         * @var Book $book1
+         * @var Book $book2
+         * @var Book $book3
+         */
+        extract($this->get3Books());
+
+        $series1 = new Series();
+        $series1->setName('Series 1');
+        $this->em->persist($series1);
+
+        $series2 = new Series();
+        $series2->setName('Series 2');
+        $this->em->persist($series2);
+
+
+        $volume1 = new Book();
+        $volume1->setAuthor($author);
+        $volume1->setCategory($category);
+        $volume1->setSeries($series1);
+        $this->em->persist($volume1);
+
+        $volume2 = new Book();
+        $volume2->setAuthor($author);
+        $volume2->setCategory($category);
+        $volume2->setSeries($series1);
+        $this->em->persist($volume2);
+
+        $this->em->flush();
+
+        $this->assertSame(1, $volume1->getVolume());
+        $this->assertSame($series1, $volume1->getSeries());
+        $this->assertSame(2, $volume2->getVolume());
+        $this->assertSame($series1, $volume2->getSeries());
+        $this->assertSame(null, $book1->getSeries());
+        $this->assertSame(null, $book1->getVolume());
+
+        $book1->setSeries($series2);
+        $book2->setSeries($series2);
+        $this->em->flush();
+
+        $this->assertSame(1, $book1->getVolume());
+        $this->assertSame(2, $book2->getVolume());
+    }
+
 
     private function get3Books()
     {
@@ -272,6 +324,7 @@ class SortableMultipleTest extends BaseTestCaseORM
             self::CATEGORY,
             self::AUTHOR,
             self::BOOK,
+            self::SERIES,
         );
     }
 }

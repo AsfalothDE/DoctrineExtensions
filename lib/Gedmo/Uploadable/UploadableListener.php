@@ -2,7 +2,7 @@
 
 namespace Gedmo\Uploadable;
 
-use Doctrine\Common\Persistence\Mapping\ClassMetadata;
+use Doctrine\Persistence\Mapping\ClassMetadata;
 use Gedmo\Mapping\MappedEventSubscriber;
 use Doctrine\Common\EventArgs;
 use Gedmo\Mapping\Event\AdapterInterface;

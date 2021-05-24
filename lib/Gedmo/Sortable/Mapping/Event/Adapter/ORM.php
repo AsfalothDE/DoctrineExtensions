@@ -2,7 +2,7 @@
 
 namespace Gedmo\Sortable\Mapping\Event\Adapter;
 
-use Doctrine\Common\Persistence\Mapping\ClassMetadata;
+use Doctrine\Persistence\Mapping\ClassMetadata;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\QueryBuilder;
 use Gedmo\Mapping\Event\Adapter\ORM as BaseAdapterORM;

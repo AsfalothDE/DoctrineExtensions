@@ -36,10 +36,10 @@ class TransliterationTest extends BaseTestCaseORM
         $this->assertEquals('transliteration-test-usage-uz-lt', $lithuanian->getSlug());
 
         $bulgarian = $repo->findOneByCode('bg');
-        $this->assertEquals('tova-ie-tiestovo-zaghlaviie-bg', $bulgarian->getSlug());
+        $this->assertEquals('tova-e-testovo-zaglavie-bg', $bulgarian->getSlug());
 
         $russian = $repo->findOneByCode('ru');
-        $this->assertEquals('eto-tiestovyi-zagholovok-ru', $russian->getSlug());
+        $this->assertEquals('eto-testovyi-zagolovok-ru', $russian->getSlug());
 
         $german = $repo->findOneByCode('de');
         $this->assertEquals('fuhren-aktivitaten-haglofs-de', $german->getSlug());

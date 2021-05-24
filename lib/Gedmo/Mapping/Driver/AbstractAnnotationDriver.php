@@ -2,7 +2,7 @@
 
 namespace Gedmo\Mapping\Driver;
 
-use Doctrine\Common\Persistence\Mapping\ClassMetadata;
+use Doctrine\Persistence\Mapping\ClassMetadata;
 
 /**
  * This is an abstract class to implement common functionality
@@ -84,7 +84,7 @@ abstract class AbstractAnnotationDriver implements AnnotationDriverInterface
     }
 
     /**
-     * @param \Doctrine\Common\Persistence\Mapping\ClassMetaData $meta
+     * @param \Doctrine\Persistence\Mapping\ClassMetaData $meta
      * @param array                                              $config
      */
     public function validateFullMetadata(ClassMetadata $meta, array $config)

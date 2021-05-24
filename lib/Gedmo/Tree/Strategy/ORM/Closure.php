@@ -6,7 +6,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\ORM\Version;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Persistence\ObjectManager;
 use Gedmo\Tree\Strategy;
 use Gedmo\Tree\TreeListener;
 use Gedmo\Tool\Wrapper\AbstractWrapper;
@@ -312,7 +312,7 @@ class Closure implements Strategy
     /**
      * Process pending entities to set their "level" value
      *
-     * @param \Doctrine\Common\Persistence\ObjectManager $em
+     * @param \Doctrine\Persistence\ObjectManager $em
      */
     protected function setLevelFieldOnPendingNodes(ObjectManager $em)
     {

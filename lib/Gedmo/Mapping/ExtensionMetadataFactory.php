@@ -100,8 +100,10 @@ class ExtensionMetadataFactory
 
         // cache the metadata (even if it's empty)
         // caching empty metadata will prevent re-parsing non-existent annotations
+        $omConfig = $this->objectManager->getConfiguration();
+        $cacheDriver = $omConfig->getMetadataCacheImpl();
         $cacheId = self::getCacheId($meta->name, $this->extensionNamespace);
-        if ($cacheDriver = $cmf->getCacheDriver()) {
+        if ($cacheDriver) {
             $cacheDriver->save($cacheId, $config, null);
         }
 

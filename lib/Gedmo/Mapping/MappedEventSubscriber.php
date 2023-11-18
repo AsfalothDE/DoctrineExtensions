@@ -119,7 +119,8 @@ abstract class MappedEventSubscriber implements EventSubscriber
             $config = self::$configurations[$this->name][$class];
         } else {
             $factory = $objectManager->getMetadataFactory();
-            $cacheDriver = $factory->getCacheDriver();
+            $omConfig = $objectManager->getConfiguration();
+            $cacheDriver = $omConfig->getMetadataCacheImpl();
             if ($cacheDriver) {
                 $cacheId = ExtensionMetadataFactory::getCacheId($class, $this->getNamespace());
                 if (($cached = $cacheDriver->fetch($cacheId)) !== false) {

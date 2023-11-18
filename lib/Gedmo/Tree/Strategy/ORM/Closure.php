@@ -153,7 +153,9 @@ class Closure implements Strategy
         $closureMetadata->table['indexes'][$indexName] = array(
             'columns' => array('depth'),
         );
-        if ($cacheDriver = $cmf->getCacheDriver()) {
+        $omConfig = $em->getConfiguration();
+        $cacheDriver = $omConfig->getMetadataCacheImpl();
+        if ($cacheDriver) {
             $cacheDriver->save($closureMetadata->name."\$CLASSMETADATA", $closureMetadata, null);
         }
     }

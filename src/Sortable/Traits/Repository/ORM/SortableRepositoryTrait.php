@@ -1,0 +1,107 @@
+<?php
+
+namespace Gedmo\Sortable\Traits\Repository\ORM;
+
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\ORM\Query;
+use Doctrine\ORM\QueryBuilder;
+use Gedmo\Exception\InvalidMappingException;
+use Gedmo\Sortable\SortableListener;
+
+trait SortableRepositoryTrait
+{
+    /**
+     * Sortable listener on event manager
+     *
+     * @var SortableListener
+     */
+    protected $listener;
+
+    /**
+     * @var array<string, mixed>
+     */
+    protected $config;
+
+    /**
+     * @var ClassMetadata
+     */
+    protected $meta;
+
+    /**
+     * This method should be called in your repository __construct().
+     */
+    public function initializeSortableRepository(EntityManagerInterface $em, ClassMetadata $class)
+    {
+        $sortableListener = null;
+        foreach ($em->getEventManager()->getAllListeners() as $listeners) {
+            foreach ($listeners as $listener) {
+                if ($listener instanceof SortableListener) {
+                    $sortableListener = $listener;
+
+                    break 2;
+                }
+            }
+        }
+
+        if (null === $sortableListener) {
+            throw new InvalidMappingException('This repository can be attached only to ORM sortable listener');
+        }
+
+        $this->listener = $sortableListener;
+        $this->meta = $this->getClassMetadata();
+        $this->config = $this->listener->getConfiguration($this->getEntityManager(), $this->meta->getName());
+    }
+
+    /**
+     * @param array<string, mixed> $groupValues
+     *
+     * @return Query
+     */
+    public function getBySortableGroupsQuery(array $groupValues = [])
+    {
+        return $this->getBySortableGroupsQueryBuilder($groupValues)->getQuery();
+    }
+
+    /**
+     * @param array<string, mixed> $groupValues
+     *
+     * @return QueryBuilder
+     */
+    public function getBySortableGroupsQueryBuilder(array $groupValues = [])
+    {
+        $groups = isset($this->config['groups']) ? array_combine(array_values($this->config['groups']), array_keys($this->config['groups'])) : [];
+        foreach ($groupValues as $name => $value) {
+            if (!in_array($name, $this->config['groups'], true)) {
+                throw new \InvalidArgumentException('Sortable group "'.$name.'" is not defined in Entity '.$this->meta->getName());
+            }
+            unset($groups[$name]);
+        }
+        if ([] !== $groups) {
+            throw new \InvalidArgumentException('You need to specify values for the following groups to select by sortable groups: '.implode(', ', array_keys($groups)));
+        }
+
+        $qb = $this->createQueryBuilder('n');
+        $qb->orderBy('n.'.$this->config['position']);
+        $i = 1;
+        foreach ($groupValues as $group => $value) {
+            $qb->andWhere('n.'.$group.' = :group'.$i)
+                ->setParameter('group'.$i, $value);
+            ++$i;
+        }
+
+        return $qb;
+    }
+
+    /**
+     * @param array<string, mixed> $groupValues
+     *
+     * @return array<int, object>
+     */
+    public function getBySortableGroups(array $groupValues = [])
+    {
+        $query = $this->getBySortableGroupsQuery($groupValues);
+
+        return $query->getResult();
+    }
+}

@@ -68,7 +68,7 @@ final class ODM extends BaseAdapterODM implements SortableAdapter
         $qb->updateMany();
         $qb->field($config['position'])->inc($delta['delta']);
         $qb->field($config['position'])->gte($delta['start']);
-        if ($delta['stop'] > 0) {
+        if ($delta['stop'] > $config['startWith']) {
             $qb->field($config['position'])->lt($delta['stop']);
         }
         foreach ($relocation['groups'] as $group => $value) {

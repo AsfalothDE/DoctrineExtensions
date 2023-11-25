@@ -26,7 +26,7 @@ interface Sortable
      *
      * example:
      *
-     * @gedmo:SortablePosition
+     * @gedmo:SortablePosition(startWith=1, incrementBy=10)
      * @Column(type="int")
      * $position
      *
@@ -41,7 +41,7 @@ interface Sortable
      *
      * example:
      *
-     * @gedmo:SortableGroup
+     * @gedmo:SortableGroup(sortNullValues=false)
      * @Column(type="string", length=64)
      * $category
      */

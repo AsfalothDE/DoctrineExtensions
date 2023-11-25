@@ -68,5 +68,12 @@ final class SortableMappingTest extends BaseTestCaseOM
         static::assertSame('grouping', $config['groups'][0]);
         static::assertSame('sortable_group', $config['groups'][1]);
         static::assertSame('sortable_groups', $config['groups'][2]);
+        static::assertArrayHasKey('incrementBy', $config);
+        static::assertSame(1, $config['incrementBy']);
+        static::assertArrayHasKey('sortNullValues', $config);
+        static::assertTrue($config['sortNullValues']);
+        static::assertArrayHasKey('startWith', $config);
+        static::assertSame(0, $config['startWith']);
     }
+    // TODO: Test non default mapping
 }

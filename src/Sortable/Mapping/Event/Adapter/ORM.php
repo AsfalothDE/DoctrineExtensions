@@ -30,7 +30,7 @@ final class ORM extends BaseAdapterORM implements SortableAdapter
      * @param ClassMetadata           $meta
      * @param iterable<string, mixed> $groups
      *
-     * @return int|null
+     * @return int|bool|null
      */
     public function getMaxPosition(array $config, $meta, $groups)
     {
@@ -39,7 +39,22 @@ final class ORM extends BaseAdapterORM implements SortableAdapter
         $qb = $em->createQueryBuilder();
         $qb->select('MAX(n.'.$config['position'].')')
            ->from($config['useObjectClass'], 'n');
-        $this->addGroupWhere($qb, $meta, $groups);
+
+        $addGroupWhere = $this->addGroupWhere($qb, $meta, $groups, $config);
+
+        if ($groups && empty($addGroupWhere)) {
+            // no need to run query when the group to query by has the value null
+            return false;
+        }
+
+        foreach ($addGroupWhere as $where => $parameter) {
+            $qb->andWhere($where);
+            if ($parameter) {
+                [$key, $value, $type] = $parameter;
+                $qb->setParameter($key, $value, $type);
+            }
+        }
+
         $query = $qb->getQuery();
         $query->useQueryCache(false);
         $query->disableResultCache();
@@ -59,22 +74,27 @@ final class ORM extends BaseAdapterORM implements SortableAdapter
      */
     public function updatePositions($relocation, $delta, $config)
     {
-        $sign = $delta['delta'] < 0 ? '-' : '+';
+        $sign = $delta['delta'] < $config['startWith'] ? '-' : '+';
         $absDelta = abs($delta['delta']);
         $dql = "UPDATE {$relocation['name']} n";
         $dql .= " SET n.{$config['position']} = n.{$config['position']} {$sign} {$absDelta}";
         $dql .= " WHERE n.{$config['position']} >= {$delta['start']}";
         // if not null, false or 0
-        if ($delta['stop'] > 0) {
+        if ($delta['stop'] > $config['startWith']) {
             $dql .= " AND n.{$config['position']} < {$delta['stop']}";
         }
-        $i = -1;
+        $i = $config['startWith'] - 1; // Todo: substract incrementBy value?
         $params = [];
         foreach ($relocation['groups'] as $group => $value) {
             if (null === $value) {
-                $dql .= " AND n.{$group} IS NULL";
+                if ($config['sortNullValues']) {
+                    $dql .= " AND n.{$group} IS NULL";
+                } else {
+                    // no need to run query when the group to query by has the value null
+                    continue;
+                }
             } else {
-                $dql .= " AND n.{$group} = :val___".(++$i);
+                $dql .= " AND n.{$group} = :val___".(++$i); // Todo: incrementby instead of ++?
                 $params['val___'.$i] = $value;
             }
         }
@@ -117,17 +137,25 @@ final class ORM extends BaseAdapterORM implements SortableAdapter
     /**
      * @param iterable<string, mixed> $groups
      */
-    private function addGroupWhere(QueryBuilder $qb, ClassMetadata $metadata, iterable $groups): void
+    private function addGroupWhere(QueryBuilder $qb, ClassMetadata $metadata, iterable $groups, $config): array
     {
+        $groupWhere = [];
         $i = 1;
         foreach ($groups as $group => $value) {
             if (null === $value) {
                 $qb->andWhere($qb->expr()->isNull('n.'.$group));
+                if ($config['sortNullValues']) {
+                    $groupWhere[$qb->expr()->isNull('n.'.$group)] = null;
+                } else {
+                    // Don't sort when group value is null
+                    continue;
+                }
             } else {
-                $qb->andWhere('n.'.$group.' = :group__'.$i);
-                $qb->setParameter('group__'.$i, $value, $metadata->getTypeOfField($group));
+                $groupWhere['n.'.$group.' = :group__'.$i] = ['group__'.$i, $value, $metadata->getTypeOfField($group)];
             }
             ++$i;
         }
+
+        return $groupWhere;
     }
 }

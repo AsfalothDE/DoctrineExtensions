@@ -61,8 +61,8 @@ class Annotation extends AbstractAnnotationDriver
                 continue;
             }
 
-            // position
-            if ($this->reader->getPropertyAnnotation($property, self::POSITION)) {
+            /** @var SortablePosition $sortablePosition */
+            if ($sortablePosition = $this->reader->getPropertyAnnotation($property, self::POSITION)) {
                 $field = $property->getName();
                 if (!$meta->hasField($field)) {
                     throw new InvalidMappingException("Unable to find 'position' - [{$field}] as mapped property in entity - {$meta->getName()}");
@@ -71,10 +71,12 @@ class Annotation extends AbstractAnnotationDriver
                     throw new InvalidMappingException("Sortable position field - [{$field}] type is not valid and must be 'integer' in class - {$meta->getName()}");
                 }
                 $config['position'] = $field;
+                $config['startWith'] = $sortablePosition->startWith ?? 0;
+                $config['incrementBy'] = $sortablePosition->incrementBy ?? 1;
             }
 
-            // group
-            if ($this->reader->getPropertyAnnotation($property, self::GROUP)) {
+            /** @var SortableGroup $sortableGroup */
+            if ($sortableGroup = $this->reader->getPropertyAnnotation($property, self::GROUP)) {
                 $field = $property->getName();
                 if (!$meta->hasField($field) && !$meta->hasAssociation($field)) {
                     throw new InvalidMappingException("Unable to find 'group' - [{$field}] as mapped property in entity - {$meta->getName()}");
@@ -83,6 +85,7 @@ class Annotation extends AbstractAnnotationDriver
                     $config['groups'] = [];
                 }
                 $config['groups'][] = $field;
+                $config['sortNullValues'] = $sortableGroup->sortNullValues ?? true;
             }
         }
 

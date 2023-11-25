@@ -24,4 +24,38 @@ use Gedmo\Mapping\Annotation\Annotation as GedmoAnnotation;
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
 final class SortablePosition implements GedmoAnnotation
 {
+    use ForwardCompatibilityTrait;
+
+    /**
+     * @phpstan-var int<0, max>
+     */
+    public int $startWith = 0;
+
+    /**
+     * @phpstan-var positive-int
+     */
+    public int $incrementBy = 1;
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    public function __construct(array $data = [], int $startWith = 0, int $incrementBy = 1)
+    {
+        if ([] !== $data) {
+            @trigger_error(sprintf(
+                'Passing an array as first argument to "%s()" is deprecated. Use named arguments instead.',
+                __METHOD__
+            ), E_USER_DEPRECATED);
+
+            $args = func_get_args();
+
+            $this->startWith = $this->getAttributeValue($data, 'startWith', $args, 1, $startWith);
+            $this->incrementBy = $this->getAttributeValue($data, 'incrementBy', $args, 2, $incrementBy);
+
+            return;
+        }
+
+        $this->startWith = $startWith;
+        $this->incrementBy = $incrementBy;
+    }
 }

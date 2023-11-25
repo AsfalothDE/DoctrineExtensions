@@ -16,12 +16,17 @@ use Gedmo\Tree\RepositoryInterface;
 use Gedmo\Tree\Traits\Repository\ORM\TreeRepositoryTrait;
 
 /**
- * @phpstan-extends EntityRepository<object>
+ * @template T of object
+ *
+ * @template-extends EntityRepository<T>
+ *
+ * @template-implements RepositoryInterface<T>
  */
 abstract class AbstractTreeRepository extends EntityRepository implements RepositoryInterface
 {
     use TreeRepositoryTrait;
 
+    /** @param ClassMetadata<T> $class */
     public function __construct(EntityManagerInterface $em, ClassMetadata $class)
     {
         parent::__construct($em, $class);

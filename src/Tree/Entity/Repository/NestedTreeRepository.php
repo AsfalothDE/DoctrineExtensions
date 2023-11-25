@@ -12,16 +12,6 @@ namespace Gedmo\Tree\Entity\Repository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\Mapping\ClassMetadata;
-use Doctrine\ORM\Proxy\Proxy;
-use Doctrine\ORM\Query;
-use Doctrine\ORM\QueryBuilder;
-use Gedmo\Exception\InvalidArgumentException;
-use Gedmo\Exception\RuntimeException;
-use Gedmo\Exception\UnexpectedValueException;
-use Gedmo\Tool\Wrapper\EntityWrapper;
-use Gedmo\Tree\Node;
-use Gedmo\Tree\Strategy;
-use Gedmo\Tree\Strategy\ORM\Nested;
 use Gedmo\Tree\Traits\Repository\ORM\NestedTreeRepositoryTrait;
 
 /**
@@ -31,14 +21,9 @@ use Gedmo\Tree\Traits\Repository\ORM\NestedTreeRepositoryTrait;
  *
  * @author Gediminas Morkevicius <gediminas.morkevicius@gmail.com>
  *
+ * @template T of object
  *
- *
- *
- *
- *
- *
- *
- *
+ * @template-extends AbstractTreeRepository<T>
  */
 class NestedTreeRepository extends AbstractTreeRepository
 {

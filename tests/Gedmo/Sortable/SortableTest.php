@@ -16,6 +16,7 @@ use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Gedmo\Sortable\SortableListener;
 use Gedmo\Tests\Sortable\Fixture\Author;
 use Gedmo\Tests\Sortable\Fixture\Category;
+use Gedmo\Tests\Sortable\Fixture\Chapter;
 use Gedmo\Tests\Sortable\Fixture\Customer;
 use Gedmo\Tests\Sortable\Fixture\CustomerType;
 use Gedmo\Tests\Sortable\Fixture\Event;
@@ -23,7 +24,9 @@ use Gedmo\Tests\Sortable\Fixture\Item;
 use Gedmo\Tests\Sortable\Fixture\Node;
 use Gedmo\Tests\Sortable\Fixture\NotifyNode;
 use Gedmo\Tests\Sortable\Fixture\Paper;
+use Gedmo\Tests\Sortable\Fixture\Series;
 use Gedmo\Tests\Sortable\Fixture\SimpleListItem;
+use Gedmo\Tests\Sortable\Fixture\Story;
 use Gedmo\Tests\Tool\BaseTestCaseORM;
 
 /**
@@ -43,6 +46,9 @@ final class SortableTest extends BaseTestCaseORM
     private const EVENT = Event::class;
     private const CUSTOMER = Customer::class;
     private const CUSTOMER_TYPE = CustomerType::class;
+    private const STORY = Story::class;
+    private const CHAPTER = Chapter::class;
+    private const SERIES = Series::class;
 
     private ?int $nodeId = null;
 
@@ -846,6 +852,178 @@ final class SortableTest extends BaseTestCaseORM
         }
     }
 
+    public function testShouldRespectACustomStartWithConfig(): void
+    {
+        $story = new Story();
+        $story->setTitle('Story 1');
+
+        $chapters = [];
+
+        for ($i = 1; $i <= 5; ++$i) {
+            $chapters[$i] = new Chapter();
+            $chapters[$i]->setTitle('Chapter '.$i);
+            $story->addChapter($chapters[$i]);
+        }
+
+        $this->em->persist($story);
+
+        $this->em->flush();
+        $this->em->clear(); // @TODO: this should not be required
+
+        static::assertSame(1, $chapters[1]->getNumber());
+        static::assertSame(2, $chapters[2]->getNumber());
+        static::assertSame(3, $chapters[3]->getNumber());
+        static::assertSame(4, $chapters[4]->getNumber());
+        static::assertSame(5, $chapters[5]->getNumber());
+    }
+
+    public function testShouldRespectACustomStartWithConfigOnUpdate(): void
+    {
+        $story = new Story();
+        $story->setTitle('Story 1');
+
+        $node1 = new Chapter();
+        $node1->setTitle('Node1');
+        $node1->setStory($story);
+        $this->em->persist($node1);
+
+        $node2 = new Chapter();
+        $node2->setTitle('Node2');
+        $node2->setStory($story);
+        $this->em->persist($node2);
+
+        $node3 = new Chapter();
+        $node3->setTitle('Node3');
+        $node3->setStory($story);
+        $this->em->persist($node3);
+
+        $node4 = new Chapter();
+        $node4->setTitle('Node4');
+        $node4->setStory($story);
+        $this->em->persist($node4);
+
+        $node5 = new Chapter();
+        $node5->setTitle('Node5');
+        $node5->setStory($story);
+        $this->em->persist($node5);
+
+        $this->em->flush();
+
+        static::assertSame(1, $node1->getNumber());
+        $node2->setNumber(4);
+        $node3->setNumber(5);
+        $this->em->persist($node2);
+        $this->em->persist($node3);
+        $this->em->flush();
+
+        $repo = $this->em->getRepository(self::CHAPTER);
+        $nodes = $repo->getBySortableGroups(['story' => $story]);
+
+        static::assertSame('Node1', $nodes[0]->getTitle());
+        static::assertSame(1, $nodes[0]->getNumber());
+        static::assertSame('Node4', $nodes[1]->getTitle());
+        static::assertSame(2, $nodes[1]->getNumber());
+        static::assertSame('Node5', $nodes[2]->getTitle());
+        static::assertSame(3, $nodes[2]->getNumber());
+        static::assertSame('Node2', $nodes[3]->getTitle());
+        static::assertSame(4, $nodes[3]->getNumber());
+        static::assertSame('Node3', $nodes[4]->getTitle());
+        static::assertSame(5, $nodes[4]->getNumber());
+
+        for ($i = 0; $i < count($nodes); ++$i) {
+            static::assertSame($i + 1, $nodes[$i]->getNumber());
+        }
+
+        $this->em->remove($node5);
+        $this->em->flush();
+
+        $repo = $this->em->getRepository(self::CHAPTER);
+        $nodes = $repo->getBySortableGroups(['story' => $story]);
+
+        static::assertSame('Node1', $nodes[0]->getTitle());
+        static::assertSame(1, $nodes[0]->getNumber());
+        static::assertSame('Node4', $nodes[1]->getTitle());
+        static::assertSame(2, $nodes[1]->getNumber());
+        static::assertSame('Node2', $nodes[2]->getTitle());
+        static::assertSame(3, $nodes[2]->getNumber());
+        static::assertSame('Node3', $nodes[3]->getTitle());
+        static::assertSame(4, $nodes[3]->getNumber());
+
+        for ($i = 0; $i < count($nodes); ++$i) {
+            static::assertSame($i + 1, $nodes[$i]->getNumber());
+        }
+
+        $this->em->remove($node1);
+        $this->em->flush();
+
+        $repo = $this->em->getRepository(self::CHAPTER);
+        $nodes = $repo->getBySortableGroups(['story' => $story]);
+
+        static::assertSame('Node4', $nodes[0]->getTitle());
+        static::assertSame(1, $nodes[0]->getNumber());
+        static::assertSame('Node2', $nodes[1]->getTitle());
+        static::assertSame(2, $nodes[1]->getNumber());
+        static::assertSame('Node3', $nodes[2]->getTitle());
+        static::assertSame(3, $nodes[2]->getNumber());
+
+        for ($i = 0; $i < count($nodes); ++$i) {
+            static::assertSame($i + 1, $nodes[$i]->getNumber());
+        }
+    }
+
+    public function testShouldSetPositionToNullWhenNullableIsFalse(): void
+    {
+        $series1 = new Series();
+        $series1->setName('Series 1');
+        $this->em->persist($series1);
+
+        $series2 = new Series();
+        $series2->setName('Series 2');
+        $this->em->persist($series2);
+
+        $volume1 = new Story();
+        $volume1->setTitle('Volume 1');
+        $volume1->setSeries($series1);
+        $this->em->persist($volume1);
+
+        $volume2 = new Story();
+        $volume2->setTitle('Volume 2');
+        $volume2->setSeries($series1);
+        $this->em->persist($volume2);
+
+        $story1 = new Story();
+        $story1->setTitle('Independant story 1');
+        $this->em->persist($story1);
+
+        $story2 = new Story();
+        $story2->setTitle('Independant story 2');
+        $this->em->persist($story2);
+
+        $this->em->flush();
+
+        static::assertSame(1, $volume1->getVolume());
+        static::assertSame($series1, $volume1->getSeries());
+        static::assertSame(2, $volume2->getVolume());
+        static::assertSame($series1, $volume2->getSeries());
+        static::assertNull($story1->getSeries());
+        static::assertNull($story1->getVolume());
+        static::assertNull($story2->getSeries());
+        static::assertNull($story2->getVolume());
+
+        $story1->setSeries($series2);
+        $story2->setSeries($series2);
+        $this->em->flush();
+
+        $repo = $this->em->getRepository(self::STORY);
+        $nodes = $repo->getBySortableGroups(['series' => $series2]);
+
+        static::assertCount(2, $nodes);
+        static::assertSame(1, $nodes[0]->getVolume());
+        static::assertSame('Independant story 1', $nodes[0]->getTitle());
+        static::assertSame(2, $nodes[1]->getVolume());
+        static::assertSame('Independant story 2', $nodes[1]->getTitle());
+    }
+
     protected function getUsedEntityFixtures(): array
     {
         return [
@@ -859,6 +1037,9 @@ final class SortableTest extends BaseTestCaseORM
             self::EVENT,
             self::CUSTOMER,
             self::CUSTOMER_TYPE,
+            self::SERIES,
+            self::STORY,
+            self::CHAPTER,
         ];
     }
 

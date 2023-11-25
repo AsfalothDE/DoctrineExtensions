@@ -59,6 +59,16 @@ class Yaml extends File implements Driver
                             throw new InvalidMappingException("Sortable position field - [{$field}] type is not valid and must be 'integer' in class - {$meta->getName()}");
                         }
                         $config['position'] = $field;
+
+                        $config['startWith'] = 0;
+                        if (array_key_exists('sortablePosition', $fieldMapping['gedmo']) && in_array('startWith', $fieldMapping['gedmo']['sortablePosition'], true)) {
+                            $config['startWith'] = $fieldMapping['gedmo']['sortablePosition']['startWith'];
+                        }
+
+                        $config['incrementBy'] = 1;
+                        if (array_key_exists('sortablePosition', $fieldMapping['gedmo']) && in_array('incrementBy', $fieldMapping['gedmo']['sortablePosition'], true)) {
+                            $config['incrementBy'] = $fieldMapping['gedmo']['sortablePosition']['incrementBy'];
+                        }
                     }
                 }
             }
@@ -115,6 +125,11 @@ class Yaml extends File implements Driver
                         $config['groups'] = [];
                     }
                     $config['groups'][] = $field;
+
+                    $config['sortNullValues'] = true;
+                    if (array_key_exists('sortableGroup', $fieldMapping['gedmo']) && in_array('sortNullValues', $fieldMapping['gedmo']['sortableGroup'], true)) {
+                        $config['sortNullValues'] = $fieldMapping['gedmo']['sortableGroup']['sortNullValues'];
+                    }
                 }
             }
         }

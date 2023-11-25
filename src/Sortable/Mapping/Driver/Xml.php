@@ -54,6 +54,16 @@ class Xml extends BaseXml
                         throw new InvalidMappingException("Sortable position field - [{$field}] type is not valid and must be 'integer' in class - {$meta->getName()}");
                     }
                     $config['position'] = $field;
+
+                    $config['startWith'] = 0;
+                    if ($this->_isAttributeSet($mapping->{'sortable-position'}, 'startWith')) {
+                        $config['startWith'] = $this->_getAttribute($mapping->{'sortable-position'}, 'startWith');
+                    }
+
+                    $config['incrementBy'] = 1;
+                    if ($this->_isAttributeSet($mapping->{'sortable-position'}, 'incrementBy')) {
+                        $config['incrementBy'] = $this->_getAttribute($mapping->{'sortable-position'}, 'incrementBy');
+                    }
                 }
             }
             $config = $this->readSortableGroups($xml->field, $config, 'name');
@@ -109,6 +119,11 @@ class Xml extends BaseXml
                     $config['groups'] = [];
                 }
                 $config['groups'][] = $field;
+
+                $config['sortNullValues'] = true;
+                if ($this->_isAttributeSet($map->{'sortable-group'}, 'sortNullValues')) {
+                    $config['sortNullValues'] = $this->_getAttribute($map->{'sortable-group'}, 'sortNullValues');
+                }
             }
         }
 

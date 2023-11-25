@@ -24,4 +24,28 @@ use Gedmo\Mapping\Annotation\Annotation as GedmoAnnotation;
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
 final class SortableGroup implements GedmoAnnotation
 {
+    use ForwardCompatibilityTrait;
+
+    public bool $sortNullValues = true;
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    public function __construct(array $data = [], bool $sortNullValues = true)
+    {
+        if ([] !== $data) {
+            @trigger_error(sprintf(
+                'Passing an array as first argument to "%s()" is deprecated. Use named arguments instead.',
+                __METHOD__
+            ), E_USER_DEPRECATED);
+
+            $args = func_get_args();
+
+            $this->sortNullValues = $this->getAttributeValue($data, 'sortNullValues', $args, 1, $sortNullValues);
+
+            return;
+        }
+
+        $this->sortNullValues = $sortNullValues;
+    }
 }

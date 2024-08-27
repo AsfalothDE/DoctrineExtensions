@@ -10,8 +10,8 @@
 namespace Gedmo\Tree\Entity\Repository;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\Mapping\ClassMetadata;
+use Gedmo\Tool\ORM\Repository\EntityRepositoryCompat;
 use Gedmo\Tree\Traits\Repository\ORM\NestedTreeRepositoryTrait;
 
 /**
@@ -27,6 +27,7 @@ use Gedmo\Tree\Traits\Repository\ORM\NestedTreeRepositoryTrait;
  */
 class NestedTreeRepository extends AbstractTreeRepository
 {
+    use EntityRepositoryCompat;
     use NestedTreeRepositoryTrait;
 
     /**

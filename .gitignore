@@ -2,6 +2,7 @@
 bin
 vendor
 composer.lock
+coverage.xml
 phpstan.neon
-tests/.phpunit.result.cache
-tests/phpunit.xml
+.phpunit.result.cache
+phpunit.xml

@@ -15,6 +15,7 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\EventManager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Doctrine\ORM\Mapping\Driver\XmlDriver;
 use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
 use Gedmo\References\ReferencesListener;
@@ -34,10 +35,13 @@ final class ReferencesMappingTest extends BaseTestCaseOM
     {
         parent::setUp();
 
-        $reader = new AnnotationReader();
-        $annotationDriver = new AnnotationDriver($reader);
+        if (PHP_VERSION_ID >= 80000) {
+            $annotationDriver = new AttributeDriver([]);
+        } else {
+            $annotationDriver = new AnnotationDriver(new AnnotationReader());
+        }
 
-        $xmlDriver = new XmlDriver(__DIR__.'/../Driver/Xml');
+        $xmlDriver = new XmlDriver(__DIR__.'/../Driver/Xml', XmlDriver::DEFAULT_FILE_EXTENSION, false);
 
         $chain = new MappingDriverChain();
         $chain->addDriver($xmlDriver, 'Gedmo\Tests\Mapping\Fixture\Xml');

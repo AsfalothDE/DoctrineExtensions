@@ -13,6 +13,7 @@ namespace Gedmo\Tests\Timestampable;
 
 use Doctrine\Common\EventManager;
 use Doctrine\Persistence\Proxy;
+use Gedmo\Tests\Clock;
 use Gedmo\Tests\Timestampable\Fixture\Article;
 use Gedmo\Tests\Timestampable\Fixture\Author;
 use Gedmo\Tests\Timestampable\Fixture\Comment;
@@ -35,8 +36,11 @@ final class TimestampableTest extends BaseTestCaseORM
     {
         parent::setUp();
 
+        $listener = new TimestampableListener();
+        $listener->setClock(new Clock());
+
         $evm = new EventManager();
-        $evm->addEventSubscriber(new TimestampableListener());
+        $evm->addEventSubscriber($listener);
 
         $this->getDefaultMockSqliteEntityManager($evm);
     }
@@ -46,6 +50,10 @@ final class TimestampableTest extends BaseTestCaseORM
      */
     public function testShouldHandleDetatchedAndMergedBackEntities(): void
     {
+        if (!method_exists($this->em, 'merge')) {
+            static::markTestSkipped('Test covers behavior with EntityManager::merge() which does not exist on ORM 3');
+        }
+
         $sport = new Article();
         $sport->setTitle('Sport');
         $sport->setBody('Sport article body.');
@@ -64,6 +72,10 @@ final class TimestampableTest extends BaseTestCaseORM
      */
     public function testShouldHandleDetatchedAndMergedBackEntitiesAfterPersist(): void
     {
+        if (!method_exists($this->em, 'merge')) {
+            static::markTestSkipped('Test covers behavior with EntityManager::merge() which does not exist on ORM 3');
+        }
+
         $sport = new Article();
         $sport->setTitle('Sport');
         $sport->setBody('Sport article body.');

@@ -10,6 +10,7 @@
 namespace Gedmo\Mapping\Event\Adapter;
 
 use Doctrine\Common\EventArgs;
+use Doctrine\Deprecations\Deprecation;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Event\LifecycleEventArgs;
 use Doctrine\ODM\MongoDB\Mapping\ClassMetadata;
@@ -30,10 +31,12 @@ class ODM implements AdapterInterface
 
     public function __call($method, $args)
     {
-        @trigger_error(sprintf(
+        Deprecation::trigger(
+            'gedmo/doctrine-extensions',
+            'https://github.com/doctrine-extensions/DoctrineExtensions/pull/2409',
             'Using "%s()" method is deprecated since gedmo/doctrine-extensions 3.5 and will be removed in version 4.0.',
             __METHOD__
-        ), E_USER_DEPRECATED);
+        );
 
         if (null === $this->args) {
             throw new RuntimeException('Event args must be set before calling its methods');
@@ -150,6 +153,8 @@ class ODM implements AdapterInterface
     }
 
     /**
+     * @deprecated to be removed in 4.0, use custom lifecycle event classes instead.
+     *
      * Creates a ODM specific LifecycleEventArgs.
      *
      * @param object          $document
@@ -159,6 +164,13 @@ class ODM implements AdapterInterface
      */
     public function createLifecycleEventArgsInstance($document, $documentManager)
     {
+        Deprecation::trigger(
+            'gedmo/doctrine-extensions',
+            'https://github.com/doctrine-extensions/DoctrineExtensions/pull/2649',
+            'Using "%s()" method is deprecated since gedmo/doctrine-extensions 3.15 and will be removed in version 4.0.',
+            __METHOD__
+        );
+
         return new LifecycleEventArgs($document, $documentManager);
     }
 }

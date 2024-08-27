@@ -11,7 +11,7 @@ env:
 
 jobs:
   phpunit:
-    name: "PHPUnit ${{ matrix.php-version }} (${{ matrix.deps }})"
+    name: "PHPUnit ${{ matrix.php-version }} (${{ matrix.deps }})${{ matrix.no-annotations == true && ' - Without Annotations' || '' }}${{ matrix.orm != '' && format(' - ORM {0}', matrix.orm) || '' }}"
     runs-on: "ubuntu-20.04"
 
     services:
@@ -21,19 +21,39 @@ jobs:
           - 27017:27017
 
     strategy:
+      fail-fast: false
       matrix:
         php-version:
           - "7.4"
           - "8.0"
           - "8.1"
           - "8.2"
+          - "8.3"
         deps:
           - "highest"
+        no-annotations:
+          - false
+        orm:
+          - ""
         include:
           - deps: "lowest"
             php-version: "7.4"
           - deps: "highest"
-            php-version: "8.1"
+            php-version: "8.3"
+          # Run builds on low and high PHP versions with `doctrine/annotations` removed
+          - deps: "highest"
+            php-version: "7.4"
+            no-annotations: true
+          - deps: "highest"
+            php-version: "8.3"
+            no-annotations: true
+          # Run builds on high PHP version with `doctrine/orm` version pinned
+          - deps: "highest"
+            php-version: "8.3"
+            orm: "^2.14"
+          - deps: "highest"
+            php-version: "8.3"
+            orm: "^3.0"
 
     steps:
       - name: "Checkout"
@@ -52,18 +72,28 @@ jobs:
       - name: "Remove PHP-CS-Fixer"
         run: "composer remove --dev --no-update friendsofphp/php-cs-fixer"
 
+      # Remove doctrine/annotations if configured to do so
+      - name: "Remove doctrine/annotations"
+        if: "${{ matrix.no-annotations }}"
+        run: "composer remove --dev --no-update doctrine/annotations"
+
+      # Pin doctrine/orm if configured to do so
+      - name: "Pin doctrine/orm"
+        if: "${{ matrix.orm }}"
+        run: "composer require --dev --no-update doctrine/orm:${{ matrix.orm }}"
+
       - name: "Install dependencies with Composer"
-        uses: "ramsey/composer-install@v2"
+        uses: "ramsey/composer-install@v3"
         with:
           dependency-versions: "${{ matrix.deps }}"
 
       - name: "Run PHPUnit"
-        run: "vendor/bin/phpunit -c tests --coverage-clover coverage.xml"
+        run: "vendor/bin/phpunit --coverage-clover coverage.xml"
 
       - name: "Upload coverage file"
-        uses: "actions/upload-artifact@v3"
+        uses: "actions/upload-artifact@v4"
         with:
-          name: "${{ github.job }}-${{ matrix.php-version }}.coverage"
+          name: "${{ github.job }}-${{ matrix.php-version }}-${{ matrix.deps }}-${{ matrix.no-annotations == true && 'no-annotations' || 'with-annotations' }}${{ matrix.orm != '' && format('-orm-{0}', matrix.orm) || '' }}-coverage"
           path: "coverage.xml"
 
   lint-doctrine-xml-schema:
@@ -82,7 +112,7 @@ jobs:
           extensions: mongodb
 
       - name: "Install dependencies with Composer"
-        uses: "ramsey/composer-install@v2"
+        uses: "ramsey/composer-install@v3"
         with:
           dependency-versions: "highest"
 
@@ -105,11 +135,12 @@ jobs:
           fetch-depth: 2
 
       - name: "Download coverage files"
-        uses: "actions/download-artifact@v3"
+        uses: "actions/download-artifact@v4"
         with:
           path: "reports"
 
       - name: "Upload to Codecov"
-        uses: "codecov/codecov-action@v3"
+        uses: "codecov/codecov-action@v4"
         with:
           directory: reports
+          token: "${{ secrets.CODECOV_TOKEN }}"

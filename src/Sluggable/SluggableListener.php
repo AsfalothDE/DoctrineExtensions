@@ -10,7 +10,9 @@
 namespace Gedmo\Sluggable;
 
 use Doctrine\Common\EventArgs;
+use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Doctrine\Persistence\Event\LoadClassMetadataEventArgs;
+use Doctrine\Persistence\Event\ManagerEventArgs;
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use Doctrine\Persistence\ObjectManager;
 use Gedmo\Exception\InvalidArgumentException;
@@ -34,28 +36,32 @@ use Gedmo\Sluggable\Util\Urlizer;
  *   mappedBy?: string,
  *   pathSeparator?: string,
  *   slug?: string,
- *   slugs?: array<string, array{
- *     fields?: string[],
- *     slug?: string,
- *     style?: string,
- *     dateFormat?: string,
- *     updatable?: bool,
- *     unique?: bool,
- *     unique_base?: string,
- *     separator?: string,
- *     prefix?: string,
- *     suffix?: string,
- *     handlers?: array<class-string, array{
- *       mappedBy?: string,
- *       inverseSlugField?: string,
- *       parentRelationField?: string,
- *       relationClass?: class-string,
- *       relationField?: string,
- *       relationSlugField?: string,
- *       separator?: string,
- *     }>,
- *   }>,
+ *   slugs?: array<string, SlugConfiguration>,
  *   unique?: bool,
+ *   useObjectClass?: class-string,
+ * }
+ * @phpstan-type SlugConfiguration = array{
+ *   fields: string[],
+ *   slug: string,
+ *   style: string,
+ *   dateFormat: string,
+ *   pathSeparator?: string,
+ *   updatable: bool,
+ *   unique: bool,
+ *   unique_base: string,
+ *   separator: string,
+ *   prefix: string,
+ *   suffix: string,
+ *   handlers: array<class-string, array{
+ *     mappedBy?: string,
+ *     inverseSlugField?: string,
+ *     parentRelationField?: string,
+ *     relationClass?: class-string,
+ *     relationField?: string,
+ *     relationSlugField?: string,
+ *     separator?: string,
+ *   }>,
+ *   uniqueOverTranslations: bool,
  *   useObjectClass?: class-string,
  * }
  *
@@ -68,10 +74,8 @@ class SluggableListener extends MappedEventSubscriber
     /**
      * The power exponent to jump
      * the slug unique number by tens.
-     *
-     * @var int
      */
-    private $exponent = 0;
+    private int $exponent = 0;
 
     /**
      * Transliteration callback for slugs
@@ -239,6 +243,10 @@ class SluggableListener extends MappedEventSubscriber
     /**
      * Allows identifier fields to be slugged as usual
      *
+     * @param LifecycleEventArgs $args
+     *
+     * @phpstan-param LifecycleEventArgs<ObjectManager> $args
+     *
      * @return void
      */
     public function prePersist(EventArgs $args)
@@ -251,7 +259,7 @@ class SluggableListener extends MappedEventSubscriber
         if ($config = $this->getConfiguration($om, $meta->getName())) {
             foreach ($config['slugs'] as $slugField => $options) {
                 if ($meta->isIdentifier($slugField)) {
-                    $meta->getReflectionProperty($slugField)->setValue($object, '__id__');
+                    $meta->getReflectionProperty($slugField)->setValue($object, uniqid('__sluggable_placeholder__'));
                 }
             }
         }
@@ -260,6 +268,10 @@ class SluggableListener extends MappedEventSubscriber
     /**
      * Generate slug on objects being updated during flush
      * if they require changing
+     *
+     * @param ManagerEventArgs $args
+     *
+     * @phpstan-param ManagerEventArgs<ObjectManager> $args
      *
      * @return void
      */
@@ -334,7 +346,7 @@ class SluggableListener extends MappedEventSubscriber
             $slug = $meta->getReflectionProperty($slugField)->getValue($object);
 
             // if slug should not be updated, skip it
-            if (!$options['updatable'] && !$isInsert && (!isset($changeSet[$slugField]) || '__id__' === $slug)) {
+            if (!$options['updatable'] && !$isInsert && (!isset($changeSet[$slugField]) || 0 === strpos($slug, '__sluggable_placeholder__'))) {
                 continue;
             }
             // must fetch the old slug from changeset, since $object holds the new version
@@ -342,7 +354,7 @@ class SluggableListener extends MappedEventSubscriber
             $needToChangeSlug = false;
 
             // if slug is null, regenerate it, or needs an update
-            if (null === $slug || '__id__' === $slug || !isset($changeSet[$slugField])) {
+            if (null === $slug || 0 === strpos($slug, '__sluggable_placeholder__') || !isset($changeSet[$slugField])) {
                 $slug = '';
 
                 foreach ($options['fields'] as $sluggableField) {
@@ -474,9 +486,9 @@ class SluggableListener extends MappedEventSubscriber
     /**
      * Generates the unique slug
      *
-     * @param array<string, mixed> $config
+     * @param SlugConfiguration $config
      */
-    private function makeUniqueSlug(SluggableAdapter $ea, object $object, string $preferredSlug, bool $recursing = false, array $config = []): string
+    private function makeUniqueSlug(SluggableAdapter $ea, object $object, string $preferredSlug, bool $recursing, array $config): string
     {
         $om = $ea->getObjectManager();
         $meta = $om->getClassMetadata(get_class($object));

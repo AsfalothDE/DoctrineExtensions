@@ -12,8 +12,11 @@ namespace Gedmo\Timestampable\Mapping\Event\Adapter;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\ORM\Mapping\FieldMapping;
 use Gedmo\Mapping\Event\Adapter\ORM as BaseAdapterORM;
+use Gedmo\Mapping\Event\ClockAwareAdapterInterface;
 use Gedmo\Timestampable\Mapping\Event\TimestampableAdapter;
+use Psr\Clock\ClockInterface;
 
 /**
  * Doctrine event adapter for ORM adapted
@@ -21,8 +24,18 @@ use Gedmo\Timestampable\Mapping\Event\TimestampableAdapter;
  *
  * @author Gediminas Morkevicius <gediminas.morkevicius@gmail.com>
  */
-final class ORM extends BaseAdapterORM implements TimestampableAdapter
+final class ORM extends BaseAdapterORM implements TimestampableAdapter, ClockAwareAdapterInterface
 {
+    /**
+     * @var ClockInterface|null
+     */
+    private ?ClockInterface $clock = null;
+
+    public function setClock(ClockInterface $clock): void
+    {
+        $this->clock = $clock;
+    }
+
     /**
      * @param ClassMetadata $meta
      */
@@ -38,23 +51,23 @@ final class ORM extends BaseAdapterORM implements TimestampableAdapter
     /**
      * Generates current timestamp for the specified mapping
      *
-     * @param array<string, mixed> $mapping
+     * @param array<string, mixed>|FieldMapping $mapping
      *
      * @return \DateTimeInterface|int
      */
-    private function getRawDateValue(array $mapping)
+    private function getRawDateValue($mapping)
     {
-        $datetime = new \DateTime();
-        $type = $mapping['type'] ?? null;
+        $datetime = $this->clock instanceof ClockInterface ? $this->clock->now() : new \DateTimeImmutable();
+        $type = $mapping instanceof FieldMapping ? $mapping->type : ($mapping['type'] ?? '');
 
         if ('integer' === $type) {
             return (int) $datetime->format('U');
         }
 
         if (in_array($type, ['date_immutable', 'time_immutable', 'datetime_immutable', 'datetimetz_immutable'], true)) {
-            return \DateTimeImmutable::createFromMutable($datetime);
+            return $datetime;
         }
 
-        return $datetime;
+        return \DateTime::createFromImmutable($datetime);
     }
 }

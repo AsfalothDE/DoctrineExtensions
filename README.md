@@ -28,9 +28,9 @@ flushed in a behavioral way.
 
     composer require gedmo/doctrine-extensions
 
-* [Symfony](/doc/symfony.md)
-* [Laravel 5](https://www.laraveldoctrine.org/docs/1.3/extensions)
-* [Laminas](/doc/laminas.md)
+* [Symfony](/doc/frameworks/symfony.md)
+* [Laravel](/doc/frameworks/laravel.md)
+* [Laminas](/doc/frameworks/laminas.md)
 
 ### Upgrading
 
@@ -61,15 +61,14 @@ flushed in a behavioral way.
 - [**References**](/doc/references.md) - supports linking Entities in Documents and vice versa
 - [**ReferenceIntegrity**](/doc/reference_integrity.md) - constrains ODM MongoDB Document references
 
-All extensions support **Attribute**, **Annotation** and **XML** mapping. Additional mapping drivers
+All extensions support **Attribute**, **XML** and **Annotation** (deprecated) mapping. Additional mapping drivers
 can be easily implemented using Mapping extension to handle the additional metadata mapping.
 
 ### Version Compatibility
 
-| Extensions Version | Compatible Doctrine ORM & Common Library |
-| --- | --- |
-| 2.4 | 2.5+ |
-| 2.3 | 2.2 - 2.4 |
+* DBAL: `^3.2`
+* ORM: `^2.14` or `^3.0`
+* MongoDB ODM: `^2.3`
 
 If you are setting up the Entity Manager without a framework, see the [example](/example/em.php) to prevent issues like #1310
 
@@ -100,7 +99,7 @@ To set up and run the tests, follow these steps:
 - From the project root, run `docker compose up -d` to start containers in daemon mode
 - Enter the container via `docker compose exec php bash` (you are now in the root directory: `/var/www`)
 - Install Composer dependencies via `composer install`
-- Run the tests: `vendor/bin/phpunit -c tests/`
+- Run the tests: `vendor/bin/phpunit`
 
 ### Running the Example
 

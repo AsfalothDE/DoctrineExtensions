@@ -14,6 +14,7 @@ use Doctrine\Common\Annotations\PsrCachedReader;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventArgs;
 use Doctrine\Common\EventSubscriber;
+use Doctrine\Deprecations\Deprecation;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Mapping\ClassMetadata as DocumentClassMetadata;
 use Doctrine\ORM\EntityManagerInterface;
@@ -25,10 +26,12 @@ use Doctrine\Persistence\ObjectManager;
 use Gedmo\Exception\InvalidArgumentException;
 use Gedmo\Mapping\Driver\AttributeReader;
 use Gedmo\Mapping\Event\AdapterInterface;
+use Gedmo\Mapping\Event\ClockAwareAdapterInterface;
 use Gedmo\ReferenceIntegrity\Mapping\Validator as ReferenceIntegrityValidator;
 use Gedmo\Uploadable\FilenameGenerator\FilenameGeneratorInterface;
 use Gedmo\Uploadable\Mapping\Validator as MappingValidator;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Clock\ClockInterface;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 
 /**
@@ -80,16 +83,21 @@ abstract class MappedEventSubscriber implements EventSubscriber
     /**
      * Custom annotation reader
      *
-     * @var Reader|AttributeReader|object|null
+     * @var Reader|AttributeReader|object|false|null
      */
-    private $annotationReader;
+    private $annotationReader = false;
 
-    private static ?PsrCachedReader $defaultAnnotationReader = null;
+    /**
+     * @var Reader|AttributeReader|false|null
+     */
+    private static $defaultAnnotationReader = false;
 
     /**
      * @var CacheItemPoolInterface|null
      */
     private $cacheItemPool;
+
+    private ?ClockInterface $clock = null;
 
     public function __construct()
     {
@@ -167,8 +175,8 @@ abstract class MappedEventSubscriber implements EventSubscriber
     {
         $oid = spl_object_id($objectManager);
         if (!isset($this->extensionMetadataFactory[$oid])) {
-            if (null === $this->annotationReader) {
-                // create default annotation reader for extensions
+            if (false === $this->annotationReader) {
+                // create default annotation/attribute reader for extensions
                 $this->annotationReader = $this->getDefaultAnnotationReader();
             }
             $this->extensionMetadataFactory[$oid] = new ExtensionMetadataFactory(
@@ -197,14 +205,22 @@ abstract class MappedEventSubscriber implements EventSubscriber
      *
      * @return void
      *
-     * NOTE Providing any object is deprecated, as of 4.0 a `Doctrine\Common\Annotations\Reader` or `Gedmo\Mapping\Driver\AttributeReader` will be required
+     * @note Providing any object is deprecated, as of 4.0 an {@see AttributeReader} will be required
      */
     public function setAnnotationReader($reader)
     {
-        if (!$reader instanceof Reader && !$reader instanceof AttributeReader) {
-            trigger_deprecation(
+        if ($reader instanceof Reader) {
+            Deprecation::trigger(
                 'gedmo/doctrine-extensions',
-                '3.11',
+                'https://github.com/doctrine-extensions/DoctrineExtensions/pull/2772',
+                'Annotations support is deprecated, migrate your application to use attributes and pass an instance of %s to the %s() method instead.',
+                AttributeReader::class,
+                __METHOD__
+            );
+        } elseif (!$reader instanceof AttributeReader) {
+            Deprecation::trigger(
+                'gedmo/doctrine-extensions',
+                'https://github.com/doctrine-extensions/DoctrineExtensions/pull/2558',
                 'Providing an annotation reader which does not implement %s or is not an instance of %s to %s() is deprecated.',
                 Reader::class,
                 AttributeReader::class,
@@ -218,6 +234,11 @@ abstract class MappedEventSubscriber implements EventSubscriber
     final public function setCacheItemPool(CacheItemPoolInterface $cacheItemPool): void
     {
         $this->cacheItemPool = $cacheItemPool;
+    }
+
+    final public function setClock(ClockInterface $clock): void
+    {
+        $this->clock = $clock;
     }
 
     /**
@@ -263,6 +284,10 @@ abstract class MappedEventSubscriber implements EventSubscriber
                     $adapterClass = 'Gedmo\\Mapping\\Event\\Adapter\\'.$m[1];
                 }
                 $this->adapters[$m[1]] = new $adapterClass();
+
+                if ($this->adapters[$m[1]] instanceof ClockAwareAdapterInterface && $this->clock instanceof ClockInterface) {
+                    $this->adapters[$m[1]]->setClock($this->clock);
+                }
             }
             $this->adapters[$m[1]]->setEventArgs($args);
 
@@ -303,12 +328,23 @@ abstract class MappedEventSubscriber implements EventSubscriber
     }
 
     /**
-     * Create default annotation reader for extensions
+     * Get the default annotation or attribute reader for extensions, creating it if necessary.
+     *
+     * If a reader cannot be created due to missing requirements, no default will be set as the reader is only required for annotation or attribute metadata,
+     * and the {@see ExtensionMetadataFactory} can handle raising an error if it tries to create a mapping driver that requires this reader.
+     *
+     * @return Reader|AttributeReader|null
      */
-    private function getDefaultAnnotationReader(): Reader
+    private function getDefaultAnnotationReader()
     {
-        if (null === self::$defaultAnnotationReader) {
-            self::$defaultAnnotationReader = new PsrCachedReader(new AnnotationReader(), new ArrayAdapter());
+        if (false === self::$defaultAnnotationReader) {
+            if (class_exists(PsrCachedReader::class)) {
+                self::$defaultAnnotationReader = new PsrCachedReader(new AnnotationReader(), new ArrayAdapter());
+            } elseif (\PHP_VERSION_ID >= 80000) {
+                self::$defaultAnnotationReader = new AttributeReader();
+            } else {
+                self::$defaultAnnotationReader = null;
+            }
         }
 
         return self::$defaultAnnotationReader;

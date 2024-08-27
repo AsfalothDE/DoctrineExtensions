@@ -48,15 +48,20 @@ trait NestedTreeRepositoryTrait
      * Inherited virtual methods:
      * - find*
      *
-     * @return mixed TreeNestedRepository if persistAs* is called
+     * @param string $method
+     * @param array  $args
+     *
+     * @phpstan-param list<mixed> $args
+     *
      * @throws \BadMethodCallException  If the method called is an invalid find* or persistAs* method
      *                                  or no find* either persistAs* method at all and therefore an invalid method call
-     *
      * @throws InvalidArgumentException If arguments are invalid
-     * @see \Doctrine\ORM\EntityRepository
      *
+     * @return mixed TreeNestedRepository if persistAs* is called
+     *
+     * @see \Doctrine\ORM\EntityRepository
      */
-    public function __call($method, $args)
+    protected function doCallWithCompat($method, $args)
     {
         if ('persistAs' === substr($method, 0, 9)) {
             if (!isset($args[0])) {

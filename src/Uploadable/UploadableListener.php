@@ -13,6 +13,7 @@ use Doctrine\Common\EventArgs;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\Event\LoadClassMetadataEventArgs;
+use Doctrine\Persistence\Event\ManagerEventArgs;
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use Doctrine\Persistence\NotifyPropertyChanged;
 use Doctrine\Persistence\ObjectManager;
@@ -75,7 +76,7 @@ class UploadableListener extends MappedEventSubscriber
      *
      * @var array<int, string>
      */
-    private $pendingFileRemovals = [];
+    private array $pendingFileRemovals = [];
 
     /**
      * Array of FileInfoInterface objects. The index is the hash of the entity owner
@@ -85,7 +86,7 @@ class UploadableListener extends MappedEventSubscriber
      *
      * @phpstan-var array<int, array{entity: object, fileInfo: FileInfoInterface}>
      */
-    private $fileInfoObjects = [];
+    private array $fileInfoObjects = [];
 
     public function __construct(?MimeTypeGuesserInterface $mimeTypeGuesser = null)
     {
@@ -112,6 +113,10 @@ class UploadableListener extends MappedEventSubscriber
      * file field modified. Since we can't mark an entity as "dirty" in the "addEntityFileInfo" method,
      * doctrine thinks the entity has no changes, which produces that the "onFlush" event gets never called.
      * Here we mark the entity as dirty, so the "onFlush" event gets called, and the file is processed.
+     *
+     * @param ManagerEventArgs $args
+     *
+     * @phpstan-param ManagerEventArgs<ObjectManager> $args
      *
      * @return void
      */
@@ -151,6 +156,10 @@ class UploadableListener extends MappedEventSubscriber
     /**
      * Handle file-uploading depending on the action
      * being done with objects
+     *
+     * @param ManagerEventArgs $args
+     *
+     * @phpstan-param ManagerEventArgs<ObjectManager> $args
      *
      * @return void
      */

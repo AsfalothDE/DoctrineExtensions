@@ -9,11 +9,12 @@
 
 namespace Gedmo\Tree\Strategy\ORM;
 
-use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\Deprecations\Deprecation;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\AssociationMapping;
 use Doctrine\ORM\Mapping\ClassMetadata as ORMClassMetadata;
+use Doctrine\ORM\Mapping\PropertyAccessors\PropertyAccessorFactory;
 use Doctrine\ORM\Mapping\ToOneOwningSideMapping;
 use Doctrine\ORM\Query;
 use Doctrine\Persistence\Mapping\AbstractClassMetadataFactory;
@@ -87,7 +88,8 @@ class Closure implements Strategy
     }
 
     /**
-     * @param EntityManagerInterface $em
+     * @param EntityManagerInterface   $em
+     * @param ORMClassMetadata<object> $meta
      */
     public function processMetadataLoad($em, $meta)
     {
@@ -131,10 +133,21 @@ class Closure implements Strategy
                 'fetch' => ORMClassMetadata::FETCH_LAZY,
             ];
             $closureMetadata->mapManyToOne($ancestorMapping);
-            $closureMetadata->reflFields['ancestor'] = $cmf
-                ->getReflectionService()
-                ->getAccessibleProperty($closureMetadata->getName(), 'ancestor')
-            ;
+
+            if (property_exists($closureMetadata, 'propertyAccessors')) {
+                // ORM 3.4+
+                /** @phpstan-ignore-next-line class.NotFound Class introduced in ORM 3.4 */
+                $closureMetadata->propertyAccessors['ancestor'] = PropertyAccessorFactory::createPropertyAccessor(
+                    $closureMetadata->getName(),
+                    'ancestor'
+                );
+            } else {
+                // ORM 3.3-
+                $closureMetadata->reflFields['ancestor'] = $cmf
+                    ->getReflectionService()
+                    ->getAccessibleProperty($closureMetadata->getName(), 'ancestor')
+                ;
+            }
         }
 
         if (!$closureMetadata->hasAssociation('descendant')) {
@@ -169,10 +182,21 @@ class Closure implements Strategy
                 'fetch' => ORMClassMetadata::FETCH_LAZY,
             ];
             $closureMetadata->mapManyToOne($descendantMapping);
-            $closureMetadata->reflFields['descendant'] = $cmf
-                ->getReflectionService()
-                ->getAccessibleProperty($closureMetadata->getName(), 'descendant')
-            ;
+
+            if (property_exists($closureMetadata, 'propertyAccessors')) {
+                // ORM 3.4+
+                /** @phpstan-ignore-next-line class.NotFound Class introduced in ORM 3.4 */
+                $closureMetadata->propertyAccessors['descendant'] = PropertyAccessorFactory::createPropertyAccessor(
+                    $closureMetadata->getName(),
+                    'descendant'
+                );
+            } else {
+                // ORM 3.3-
+                $closureMetadata->reflFields['descendant'] = $cmf
+                    ->getReflectionService()
+                    ->getAccessibleProperty($closureMetadata->getName(), 'descendant')
+                ;
+            }
         }
 
         if (!$this->hasClosureTableUniqueConstraint($closureMetadata)) {
@@ -524,7 +548,9 @@ class Closure implements Strategy
             }
 
             // Avoid type conversion performance penalty
-            $type = 'integer' === $mapping['type'] ? Connection::PARAM_INT_ARRAY : Connection::PARAM_STR_ARRAY;
+            $type = 'integer' === ($mapping->type ?? $mapping['type'])
+                ? ArrayParameterType::INTEGER
+                : ArrayParameterType::STRING;
 
             // We calculate levels for all nodes
             $sql = 'SELECT c.descendant, MAX(c.depth) + 1 AS levelNum ';
@@ -561,7 +587,7 @@ class Closure implements Strategy
     }
 
     /**
-     * @param ORMClassMetadata $closureMetadata
+     * @param ORMClassMetadata<object> $closureMetadata
      */
     private function hasClosureTableUniqueConstraint(ClassMetadata $closureMetadata): bool
     {
@@ -579,7 +605,7 @@ class Closure implements Strategy
     }
 
     /**
-     * @param ORMClassMetadata $closureMetadata
+     * @param ORMClassMetadata<object> $closureMetadata
      */
     private function hasClosureTableDepthIndex(ClassMetadata $closureMetadata): bool
     {

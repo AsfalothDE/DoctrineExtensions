@@ -95,7 +95,8 @@ class Validator
     public static $validateWritableDirectory = true;
 
     /**
-     * @param string $field
+     * @param ClassMetadata<object> $meta
+     * @param string                $field
      *
      * @return void
      */
@@ -105,7 +106,8 @@ class Validator
     }
 
     /**
-     * @param string $field
+     * @param ClassMetadata<object> $meta
+     * @param string                $field
      *
      * @return void
      */
@@ -115,7 +117,8 @@ class Validator
     }
 
     /**
-     * @param string $field
+     * @param ClassMetadata<object> $meta
+     * @param string                $field
      *
      * @return void
      */
@@ -125,7 +128,8 @@ class Validator
     }
 
     /**
-     * @param string $field
+     * @param ClassMetadata<object> $meta
+     * @param string                $field
      *
      * @return void
      */
@@ -135,10 +139,10 @@ class Validator
     }
 
     /**
-     * @param ClassMetadata $meta
-     * @param string        $field
-     * @param string        $uploadableField
-     * @param string[]      $validFieldTypes
+     * @param ClassMetadata<object> $meta
+     * @param string                $field
+     * @param string                $uploadableField
+     * @param string[]              $validFieldTypes
      *
      * @return void
      */
@@ -150,7 +154,7 @@ class Validator
 
         $fieldMapping = $meta->getFieldMapping($field);
 
-        if (!in_array($fieldMapping['type'], $validFieldTypes, true)) {
+        if (!in_array($fieldMapping->type ?? $fieldMapping['type'], $validFieldTypes, true)) {
             $msg = 'Field "%s" to work as an "%s" field must be of one of the following types: "%s".';
 
             throw new InvalidMappingException(sprintf($msg, $field, $uploadableField, implode(', ', $validFieldTypes)));
@@ -182,9 +186,10 @@ class Validator
     }
 
     /**
-     * @param array<string, mixed> $config
+     * @param ClassMetadata<object> $meta
+     * @param array<string, mixed>  $config
      *
-     * @return void
+     * @return array<string, mixed>
      *
      * @todo Stop receiving by reference the `$config` parameter and use `array` as return type declaration
      */

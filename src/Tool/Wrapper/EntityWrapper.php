@@ -9,16 +9,18 @@
 
 namespace Gedmo\Tool\Wrapper;
 
-use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\Proxy as PersistenceProxy;
+use Gedmo\Tool\ClassUtils;
 
 /**
  * Wraps entity or proxy for more convenient
  * manipulation
  *
- * @phpstan-extends AbstractWrapper<ClassMetadata>
+ * @template TObject of object
+ *
+ * @template-extends AbstractWrapper<ClassMetadata<TObject>, TObject, EntityManagerInterface>
  *
  * @author Gediminas Morkevicius <gediminas.morkevicius@gmail.com>
  *
@@ -41,7 +43,7 @@ class EntityWrapper extends AbstractWrapper
     /**
      * Wrap entity
      *
-     * @param object $entity
+     * @param TObject $entity
      */
     public function __construct($entity, EntityManagerInterface $em)
     {

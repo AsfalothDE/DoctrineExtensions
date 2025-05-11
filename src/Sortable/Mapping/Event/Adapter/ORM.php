@@ -21,14 +21,17 @@ use Gedmo\Sortable\SortableListener;
  *
  * @author Lukas Botsch <lukas.botsch@gmail.com>
  *
+ * @phpstan-import-type SortableConfiguration from SortableListener
  * @phpstan-import-type SortableRelocation from SortableListener
  */
 final class ORM extends BaseAdapterORM implements SortableAdapter
 {
     /**
      * @param array<string, mixed>    $config
-     * @param ClassMetadata           $meta
+     * @param ClassMetadata<object>   $meta
      * @param iterable<string, mixed> $groups
+     *
+     * @phpstan-param SortableConfiguration $config
      *
      * @return int|bool|null
      */
@@ -68,7 +71,8 @@ final class ORM extends BaseAdapterORM implements SortableAdapter
      * @param array<string, mixed> $delta
      * @param array<string, mixed> $config
      *
-     * @phpstan-param SortableRelocation $relocation
+     * @phpstan-param SortableRelocation    $relocation
+     * @phpstan-param SortableConfiguration $config
      *
      * @return void
      */
@@ -135,6 +139,7 @@ final class ORM extends BaseAdapterORM implements SortableAdapter
     }
 
     /**
+     * @param ClassMetadata<object>   $metadata
      * @param iterable<string, mixed> $groups
      */
     private function addGroupWhere(QueryBuilder $qb, ClassMetadata $metadata, iterable $groups, $config): array

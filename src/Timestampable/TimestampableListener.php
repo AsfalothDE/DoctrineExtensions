@@ -19,14 +19,16 @@ use Gedmo\Timestampable\Mapping\Event\TimestampableAdapter;
  *
  * @author Gediminas Morkevicius <gediminas.morkevicius@gmail.com>
  *
+ * @phpstan-extends AbstractTrackingListener<array, TimestampableAdapter>
+ *
  * @final since gedmo/doctrine-extensions 3.11
  */
 class TimestampableListener extends AbstractTrackingListener
 {
     /**
-     * @param ClassMetadata        $meta
-     * @param string               $field
-     * @param TimestampableAdapter $eventAdapter
+     * @param ClassMetadata<object> $meta
+     * @param string                $field
+     * @param TimestampableAdapter  $eventAdapter
      *
      * @return mixed
      */

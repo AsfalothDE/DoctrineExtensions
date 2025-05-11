@@ -10,7 +10,6 @@
 namespace Gedmo\Uploadable;
 
 use Doctrine\Common\EventArgs;
-use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\Event\LoadClassMetadataEventArgs;
 use Doctrine\Persistence\Event\ManagerEventArgs;
@@ -37,6 +36,7 @@ use Gedmo\Uploadable\Event\UploadablePostFileProcessEventArgs;
 use Gedmo\Uploadable\Event\UploadablePreFileProcessEventArgs;
 use Gedmo\Uploadable\FileInfo\FileInfoArray;
 use Gedmo\Uploadable\FileInfo\FileInfoInterface;
+use Gedmo\Uploadable\FilenameGenerator\FilenameGeneratorInterface;
 use Gedmo\Uploadable\Mapping\Validator;
 use Gedmo\Uploadable\MimeType\MimeTypeGuesser;
 use Gedmo\Uploadable\MimeType\MimeTypeGuesserInterface;
@@ -46,6 +46,25 @@ use Gedmo\Uploadable\MimeType\MimeTypeGuesserInterface;
  *
  * @author Gustavo Falco <comfortablynumb84@gmail.com>
  * @author Gediminas Morkevicius <gediminas.morkevicius@gmail.com>
+ *
+ * @phpstan-type UploadableConfiguration = array{
+ *  filePathField?: string,
+ *  uploadable?: bool,
+ *  fileNameField?: string,
+ *  allowOverwrite?: bool,
+ *  appendNumber?: bool,
+ *  maxSize?: float,
+ *  path?: string,
+ *  pathMethod?: string,
+ *  allowedTypes?: string[],
+ *  disallowedTypes?: string[],
+ *  filenameGenerator?: Validator::FILENAME_GENERATOR_*|class-string<FilenameGeneratorInterface>,
+ *  fileMimeTypeField?: string,
+ *  fileSizeField?: string,
+ *  callback?: string,
+ * }
+ *
+ * @phpstan-extends MappedEventSubscriber<UploadableConfiguration, AdapterInterface>
  */
 class UploadableListener extends MappedEventSubscriber
 {
@@ -67,7 +86,7 @@ class UploadableListener extends MappedEventSubscriber
     /**
      * Default FileInfoInterface class
      *
-     * @phpstan-var class-string<FileInfoInterface>
+     * @var class-string<FileInfoInterface>
      */
     private string $defaultFileInfoClass = FileInfoArray::class;
 
@@ -338,10 +357,9 @@ class UploadableListener extends MappedEventSubscriber
         }
 
         if ($config['fileSizeField']) {
-            $typeOfSizeField = Type::getType($meta->getTypeOfField($config['fileSizeField']));
-            $value = $typeOfSizeField->convertToPHPValue(
+            $value = $om->getConnection()->convertToPHPValue(
                 $info['fileSize'],
-                $om->getConnection()->getDatabasePlatform()
+                $meta->getTypeOfField($config['fileSizeField'])
             );
             $this->updateField($object, $uow, $ea, $meta, $config['fileSizeField'], $value);
         }
@@ -581,7 +599,7 @@ class UploadableListener extends MappedEventSubscriber
     /**
      * Returns file info default class
      *
-     * @return string
+     * @return class-string<FileInfoInterface>
      */
     public function getDefaultFileInfoClass()
     {
@@ -591,10 +609,8 @@ class UploadableListener extends MappedEventSubscriber
     /**
      * Adds a FileInfoInterface object for the given entity
      *
-     * @param object                        $entity
-     * @param array|FileInfoInterface|mixed $fileInfo
-     *
-     * @phpstan-assert FileInfoInterface|array $fileInfo
+     * @param object                                 $entity
+     * @param array<string, mixed>|FileInfoInterface $fileInfo
      *
      * @throws \RuntimeException
      *
@@ -650,8 +666,9 @@ class UploadableListener extends MappedEventSubscriber
     }
 
     /**
-     * @param array<string, mixed> $config
-     * @param object               $object Entity
+     * @param ClassMetadata<object> $meta
+     * @param array<string, mixed>  $config
+     * @param object                $object Entity
      *
      * @throws UploadableNoPathDefinedException
      *
@@ -682,9 +699,9 @@ class UploadableListener extends MappedEventSubscriber
     }
 
     /**
-     * @param ClassMetadata        $meta
-     * @param array<string, mixed> $config
-     * @param object               $object Entity
+     * @param ClassMetadata<object> $meta
+     * @param array<string, mixed>  $config
+     * @param object                $object Entity
      *
      * @return void
      */
@@ -716,8 +733,9 @@ class UploadableListener extends MappedEventSubscriber
     /**
      * Returns value of the entity's property
      *
-     * @param string $propertyName
-     * @param object $object
+     * @param ClassMetadata<object> $meta
+     * @param string                $propertyName
+     * @param object                $object
      *
      * @return mixed
      */
@@ -731,8 +749,9 @@ class UploadableListener extends MappedEventSubscriber
     /**
      * Returns the path of the entity's file
      *
-     * @param array<string, mixed> $config
-     * @param object               $object
+     * @param ClassMetadata<object> $meta
+     * @param array<string, mixed>  $config
+     * @param object                $object
      *
      * @return string
      */
@@ -744,8 +763,9 @@ class UploadableListener extends MappedEventSubscriber
     /**
      * Returns the name of the entity's file
      *
-     * @param array<string, mixed> $config
-     * @param object               $object
+     * @param ClassMetadata<object> $meta
+     * @param array<string, mixed>  $config
+     * @param object                $object
      *
      * @return string
      */
@@ -760,11 +780,12 @@ class UploadableListener extends MappedEventSubscriber
     }
 
     /**
-     * @param object $object
-     * @param object $uow
-     * @param string $field
-     * @param mixed  $value
-     * @param bool   $notifyPropertyChanged
+     * @param object                $object
+     * @param object                $uow
+     * @param ClassMetadata<object> $meta
+     * @param string                $field
+     * @param mixed                 $value
+     * @param bool                  $notifyPropertyChanged
      *
      * @return void
      */

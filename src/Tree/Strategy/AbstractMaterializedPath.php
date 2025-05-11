@@ -225,7 +225,7 @@ abstract class AbstractMaterializedPath implements Strategy
         // default behavior: if PathSource field is a string, we append the ID to the path
         // path_append_id is true: always append id
         // path_append_id is false: never append id
-        if (true === $config['path_append_id'] || ('string' === $fieldMapping['type'] && false !== $config['path_append_id'])) {
+        if (true === $config['path_append_id'] || ('string' === ($fieldMapping->type ?? $fieldMapping['type']) && false !== $config['path_append_id'])) {
             if (method_exists($meta, 'getIdentifierValue')) {
                 $identifier = $meta->getIdentifierValue($node);
             } else {
@@ -451,10 +451,10 @@ abstract class AbstractMaterializedPath implements Strategy
     /**
      * Remove node and its children
      *
-     * @param ObjectManager        $om
-     * @param ClassMetadata        $meta   Metadata
-     * @param array<string, mixed> $config config
-     * @param object               $node   node to remove
+     * @param ObjectManager         $om
+     * @param ClassMetadata<object> $meta   Metadata
+     * @param array<string, mixed>  $config config
+     * @param object                $node   node to remove
      *
      * @return void
      */
@@ -463,10 +463,10 @@ abstract class AbstractMaterializedPath implements Strategy
     /**
      * Returns children of the node with its original path
      *
-     * @param ObjectManager        $om
-     * @param ClassMetadata        $meta         Metadata
-     * @param array<string, mixed> $config       config
-     * @param string               $originalPath original path of object
+     * @param ObjectManager         $om
+     * @param ClassMetadata<object> $meta         Metadata
+     * @param array<string, mixed>  $config       config
+     * @param string                $originalPath original path of object
      *
      * @return array<int, object>|\Traversable<int, object>
      */

@@ -96,8 +96,8 @@ class Xml extends BaseXml
     /**
      * Checks if $field type is valid
      *
-     * @param ClassMetadata $meta
-     * @param string        $field
+     * @param ClassMetadata<object> $meta
+     * @param string                $field
      *
      * @return bool
      */
@@ -105,6 +105,6 @@ class Xml extends BaseXml
     {
         $mapping = $meta->getFieldMapping($field);
 
-        return $mapping && in_array($mapping['type'], self::VALID_TYPES, true);
+        return $mapping && in_array($mapping->type ?? $mapping['type'], self::VALID_TYPES, true);
     }
 }

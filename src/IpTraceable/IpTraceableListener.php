@@ -12,11 +12,14 @@ namespace Gedmo\IpTraceable;
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use Gedmo\AbstractTrackingListener;
 use Gedmo\Exception\InvalidArgumentException;
-use Gedmo\Mapping\Event\AdapterInterface;
+use Gedmo\IpTraceable\Mapping\Event\IpTraceableAdapter;
+use Gedmo\Tool\IpAddressProviderInterface;
 
 /**
  * The IpTraceable listener handles the update of
  * IPs on creation and update.
+ *
+ * @phpstan-extends AbstractTrackingListener<array, IpTraceableAdapter>
  *
  * @author Pierre-Charles Bertineau <pc.bertineau@alterphp.com>
  *
@@ -24,27 +27,43 @@ use Gedmo\Mapping\Event\AdapterInterface;
  */
 class IpTraceableListener extends AbstractTrackingListener
 {
+    protected ?IpAddressProviderInterface $ipAddressProvider = null;
+
     /**
      * @var string|null
      */
     protected $ip;
 
     /**
-     * Get the ipValue value to set on a ip field
+     * Get the IP address value to set on an IP address field
      *
-     * @param ClassMetadata    $meta
-     * @param string           $field
-     * @param AdapterInterface $eventAdapter
+     * @param ClassMetadata<object> $meta
+     * @param string                $field
+     * @param IpTraceableAdapter    $eventAdapter
      *
      * @return string|null
      */
     public function getFieldValue($meta, $field, $eventAdapter)
     {
+        if ($this->ipAddressProvider instanceof IpAddressProviderInterface) {
+            return $this->ipAddressProvider->getAddress();
+        }
+
         return $this->ip;
     }
 
     /**
-     * Set a ip value to return
+     * Set an IP address provider for the IP address value.
+     */
+    public function setIpAddressProvider(IpAddressProviderInterface $ipAddressProvider): void
+    {
+        $this->ipAddressProvider = $ipAddressProvider;
+    }
+
+    /**
+     * Set an IP address value to return.
+     *
+     * If an IP address provider is also provided, it will take precedence over this value.
      *
      * @param string|null $ip
      *

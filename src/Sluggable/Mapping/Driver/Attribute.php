@@ -38,6 +38,8 @@ class Attribute extends AbstractAnnotationDriver
 
     /**
      * Mapping object configuring an option for a slug handler.
+     *
+     * @deprecated since gedmo/doctrine-extensions 3.18, will be removed in version 4.0.
      */
     public const HANDLER_OPTION = SlugHandlerOption::class;
 
@@ -92,6 +94,8 @@ class Attribute extends AbstractAnnotationDriver
     }
 
     /**
+     * @param ClassMetadata<object> $meta
+     *
      * @return array<class-string<SlugHandlerInterface>, SlugHandler[]>
      */
     protected function getSlugHandlers(\ReflectionProperty $property, Slug $slug, ClassMetadata $meta): array
@@ -126,7 +130,8 @@ class Attribute extends AbstractAnnotationDriver
     }
 
     /**
-     * @param array<string, mixed> $config
+     * @param ClassMetadata<object> $meta
+     * @param array<string, mixed>  $config
      *
      * @return array<string, array<string, mixed>>
      */
@@ -169,18 +174,6 @@ class Attribute extends AbstractAnnotationDriver
             if (!$this->isValidField($meta, $slugFieldWithPrefix)) {
                 throw new InvalidMappingException("Cannot use field - [{$slugFieldWithPrefix}] for slug storage, type is not valid and must be 'string' or 'text' in class - {$meta->getName()}");
             }
-        }
-
-        if (!is_bool($slug->updatable)) {
-            throw new InvalidMappingException("Slug annotation [updatable], type is not valid and must be 'boolean' in class - {$meta->getName()}");
-        }
-
-        if (!is_bool($slug->unique)) {
-            throw new InvalidMappingException("Slug annotation [unique], type is not valid and must be 'boolean' in class - {$meta->getName()}");
-        }
-
-        if (!is_bool($slug->uniqueOverTranslations)) {
-            throw new InvalidMappingException("Slug annotation [uniqueOverTranslations], type is not valid and must be 'boolean' in class - {$meta->getName()}");
         }
 
         if ([] !== $meta->getIdentifier() && $meta->isIdentifier($fieldName) && !(bool) $slug->unique) {

@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace Gedmo\Tests\Blameable;
 
 use Doctrine\Common\EventManager;
-use Gedmo\Blameable\Blameable;
 use Gedmo\Blameable\BlameableListener;
 use Gedmo\Tests\Blameable\Fixture\Entity\Company;
 use Gedmo\Tests\Tool\BaseTestCaseORM;
@@ -21,8 +20,6 @@ use Symfony\Component\Uid\UuidV6;
 
 final class BlameableUuidTest extends BaseTestCaseORM
 {
-    private const COMPANY = Company::class;
-
     private UuidV6 $uuid;
 
     protected function setUp(): void
@@ -45,8 +42,6 @@ final class BlameableUuidTest extends BaseTestCaseORM
         $company = new Company();
         $company->setName('ACME');
 
-        static::assertInstanceOf(Blameable::class, $company);
-
         $this->em->persist($company);
         $this->em->flush();
         $this->em->clear();
@@ -54,7 +49,7 @@ final class BlameableUuidTest extends BaseTestCaseORM
         /**
          * @var Company $foundCompany
          */
-        $foundCompany = $this->em->getRepository(self::COMPANY)->findOneBy(['name' => 'ACME']);
+        $foundCompany = $this->em->getRepository(Company::class)->findOneBy(['name' => 'ACME']);
         $created = $foundCompany->getCreated();
         $createdUuid = $created instanceof Uuid ? $created->toRfc4122() : null;
 
@@ -64,7 +59,7 @@ final class BlameableUuidTest extends BaseTestCaseORM
     protected function getUsedEntityFixtures(): array
     {
         return [
-            self::COMPANY,
+            Company::class,
         ];
     }
 }

@@ -16,6 +16,7 @@ use Doctrine\Persistence\Event\LoadClassMetadataEventArgs;
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use Doctrine\Persistence\ObjectManager;
 use Gedmo\Mapping\MappedEventSubscriber;
+use Gedmo\References\Mapping\Event\ReferencesAdapter;
 
 /**
  * Listener for loading and persisting cross database references.
@@ -39,7 +40,7 @@ use Gedmo\Mapping\MappedEventSubscriber;
  *   useObjectClass?: class-string,
  * }
  *
- * @phpstan-method ReferencesConfiguration getConfiguration(ObjectManager $objectManager, $class)
+ * @phpstan-extends MappedEventSubscriber<ReferencesConfiguration, ReferencesAdapter>
  *
  * @final since gedmo/doctrine-extensions 3.11
  */
@@ -125,15 +126,12 @@ class ReferencesListener extends MappedEventSubscriber
                         $property->setValue(
                             $object,
                             new LazyCollection(
-                                static function () use ($id, &$manager, $class, $identifier) {
-                                    $results = $manager
-                                        ->getRepository($class)
+                                static fn () => new ArrayCollection(
+                                    $manager->getRepository($class)
                                         ->findBy([
                                             $identifier => $id,
-                                        ]);
-
-                                    return new ArrayCollection(is_array($results) ? $results : $results->toArray());
-                                }
+                                        ])
+                                )
                             )
                         );
                     }
@@ -234,15 +232,12 @@ class ReferencesListener extends MappedEventSubscriber
                 $property->setValue(
                     $object,
                     new LazyCollection(
-                        static function () use ($id, &$manager, $class, $identifier) {
-                            $results = $manager
-                                ->getRepository($class)
+                        static fn () => new ArrayCollection(
+                            $manager->getRepository($class)
                                 ->findBy([
                                     $identifier => $id,
-                                ]);
-
-                            return new ArrayCollection(is_array($results) ? $results : $results->toArray());
-                        }
+                                ])
+                        )
                     )
                 );
             }

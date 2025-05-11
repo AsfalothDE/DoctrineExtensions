@@ -37,20 +37,6 @@ use Gedmo\Tests\Tool\BaseTestCaseORM;
  */
 final class SortableTest extends BaseTestCaseORM
 {
-    private const NODE = Node::class;
-    private const NOTIFY_NODE = NotifyNode::class;
-    private const ITEM = Item::class;
-    private const CATEGORY = Category::class;
-    private const SIMPLE_LIST_ITEM = SimpleListItem::class;
-    private const AUTHOR = Author::class;
-    private const PAPER = Paper::class;
-    private const EVENT = Event::class;
-    private const CUSTOMER = Customer::class;
-    private const CUSTOMER_TYPE = CustomerType::class;
-    private const STORY = Story::class;
-    private const CHAPTER = Chapter::class;
-    private const SERIES = Series::class;
-
     private ?int $nodeId = null;
 
     protected function setUp(): void
@@ -66,7 +52,7 @@ final class SortableTest extends BaseTestCaseORM
 
     public function testShouldSetSortPositionToInsertedNode(): void
     {
-        $node = $this->em->find(self::NODE, $this->nodeId);
+        $node = $this->em->find(Node::class, $this->nodeId);
         static::assertSame(0, $node->getPosition());
     }
 
@@ -80,7 +66,7 @@ final class SortableTest extends BaseTestCaseORM
         }
         $this->em->flush();
 
-        $repo = $this->em->getRepository(self::NODE);
+        $repo = $this->em->getRepository(Node::class);
 
         $node = $repo->findOneBy(['position' => 0]);
         $node->setPosition(-1);
@@ -107,7 +93,7 @@ final class SortableTest extends BaseTestCaseORM
         }
         $this->em->flush();
 
-        $dql = 'SELECT node FROM '.self::NODE.' node';
+        $dql = 'SELECT node FROM '.Node::class.' node';
         $dql .= ' WHERE node.path = :path ORDER BY node.position';
         $nodes = $this->em
             ->createQuery($dql)
@@ -149,7 +135,7 @@ final class SortableTest extends BaseTestCaseORM
         $this->em->persist($node2);
         $this->em->flush();
 
-        $repo = $this->em->getRepository(self::NODE);
+        $repo = $this->em->getRepository(Node::class);
         $nodes = $repo->getBySortableGroups(['path' => '/']);
 
         static::assertSame('Node1', $nodes[0]->getName());
@@ -194,7 +180,7 @@ final class SortableTest extends BaseTestCaseORM
         $this->em->persist($node3);
         $this->em->flush();
 
-        $repo = $this->em->getRepository(self::NODE);
+        $repo = $this->em->getRepository(Node::class);
         $nodes = $repo->getBySortableGroups(['path' => '/']);
 
         static::assertSame('Node1', $nodes[0]->getName());
@@ -238,7 +224,7 @@ final class SortableTest extends BaseTestCaseORM
         $this->em->flush();
         $this->em->clear(); // to reload from database
 
-        $repo = $this->em->getRepository(self::NODE);
+        $repo = $this->em->getRepository(Node::class);
         $nodes = $repo->getBySortableGroups(['path' => '/']);
 
         static::assertSame('Node1', $nodes[0]->getName());
@@ -254,7 +240,7 @@ final class SortableTest extends BaseTestCaseORM
 
     public function testShouldSyncPositionAfterDelete(): void
     {
-        $repo = $this->em->getRepository(self::NODE);
+        $repo = $this->em->getRepository(Node::class);
 
         $node2 = new Node();
         $node2->setName('Node2');
@@ -296,7 +282,7 @@ final class SortableTest extends BaseTestCaseORM
      */
     public function testShouldSyncPositionAfterMultipleDeletes(): void
     {
-        $repo = $this->em->getRepository(self::NODE);
+        $repo = $this->em->getRepository(Node::class);
 
         $node2 = new Node();
         $node2->setName('Node2');
@@ -346,7 +332,7 @@ final class SortableTest extends BaseTestCaseORM
      */
     public function testShouldSyncPositionAfterMultipleAddsAndMultipleDeletes(): void
     {
-        $repo = $this->em->getRepository(self::NODE);
+        $repo = $this->em->getRepository(Node::class);
 
         $node2 = new Node();
         $node2->setName('Node2');
@@ -408,7 +394,7 @@ final class SortableTest extends BaseTestCaseORM
      */
     public function testShouldRollbackPositionAfterExceptionOnDelete(): void
     {
-        $repo = $this->em->getRepository(self::CUSTOMER_TYPE);
+        $repo = $this->em->getRepository(CustomerType::class);
 
         $customerType1 = new CustomerType();
         $customerType1->setName('CustomerType1');
@@ -495,11 +481,11 @@ final class SortableTest extends BaseTestCaseORM
         $this->em->persist($item1);
         $this->em->flush();
 
-        $repo = $this->em->getRepository(self::CATEGORY);
+        $repo = $this->em->getRepository(Category::class);
         $category1 = $repo->findOneBy(['name' => 'Category1']);
         $category2 = $repo->findOneBy(['name' => 'Category2']);
 
-        $repo = $this->em->getRepository(self::ITEM);
+        $repo = $this->em->getRepository(Item::class);
 
         $items = $repo->getBySortableGroups(['category' => $category1]);
 
@@ -537,10 +523,10 @@ final class SortableTest extends BaseTestCaseORM
         $this->em->persist($category1);
         $this->em->flush();
 
-        $repo = $this->em->getRepository(self::CATEGORY);
+        $repo = $this->em->getRepository(Category::class);
         $category1 = $repo->findOneBy(['name' => 'Category1']);
 
-        $repo = $this->em->getRepository(self::ITEM);
+        $repo = $this->em->getRepository(Item::class);
 
         $items = $repo->getBySortableGroups(['category' => $category1]);
 
@@ -632,9 +618,9 @@ final class SortableTest extends BaseTestCaseORM
 
         $this->em->clear(); // @TODO: this should not be required
 
-        $author1 = $this->em->find(self::AUTHOR, $author1->getId());
-        $author2 = $this->em->find(self::AUTHOR, $author2->getId());
-        $author3 = $this->em->find(self::AUTHOR, $author3->getId());
+        $author1 = $this->em->find(Author::class, $author1->getId());
+        $author2 = $this->em->find(Author::class, $author2->getId());
+        $author3 = $this->em->find(Author::class, $author3->getId());
 
         static::assertSame(1, $author1->getPosition());
         static::assertSame(2, $author2->getPosition());
@@ -677,7 +663,7 @@ final class SortableTest extends BaseTestCaseORM
 
         $this->em->clear(); // @TODO: this should not be required
 
-        $repo = $this->em->getRepository(self::AUTHOR);
+        $repo = $this->em->getRepository(Author::class);
         $author1 = $repo->findOneBy(['id' => $author1->getId()]);
         $author2 = $repo->findOneBy(['id' => $author2->getId()]);
 
@@ -743,7 +729,7 @@ final class SortableTest extends BaseTestCaseORM
 
         $this->em->clear(); // @TODO: this should not be required
 
-        $repo = $this->em->getRepository(self::AUTHOR);
+        $repo = $this->em->getRepository(Author::class);
         $author1 = $repo->findOneBy(['id' => $author1->getId()]);
         $author2 = $repo->findOneBy(['id' => $author2->getId()]);
         $author3 = $repo->findOneBy(['id' => $author3->getId()]);
@@ -770,7 +756,7 @@ final class SortableTest extends BaseTestCaseORM
         }
         $this->em->flush();
 
-        $node1 = $this->em->find(self::NODE, $this->nodeId);
+        $node1 = $this->em->find(Node::class, $this->nodeId);
         $node1->setPosition(5);
 
         $this->em->flush();
@@ -778,13 +764,13 @@ final class SortableTest extends BaseTestCaseORM
         static::assertSame(5, $node1->getPosition());
 
         $this->em->detach($node1);
-        $node1 = $this->em->find(self::NODE, $this->nodeId);
+        $node1 = $this->em->find(Node::class, $this->nodeId);
         static::assertSame(5, $node1->getPosition());
     }
 
     public function testIncrementPositionOfLastObjectByOne(): void
     {
-        $node0 = $this->em->find(self::NODE, $this->nodeId);
+        $node0 = $this->em->find(Node::class, $this->nodeId);
 
         $nodes = [$node0];
 
@@ -812,7 +798,7 @@ final class SortableTest extends BaseTestCaseORM
 
     public function testSetOutOfBoundsHighPosition(): void
     {
-        $node0 = $this->em->find(self::NODE, $this->nodeId);
+        $node0 = $this->em->find(Node::class, $this->nodeId);
 
         $nodes = [$node0];
 
@@ -921,7 +907,7 @@ final class SortableTest extends BaseTestCaseORM
         $this->em->persist($node3);
         $this->em->flush();
 
-        $repo = $this->em->getRepository(self::CHAPTER);
+        $repo = $this->em->getRepository(Chapter::class);
         $nodes = $repo->getBySortableGroups(['story' => $story]);
 
         static::assertSame('Node1', $nodes[0]->getTitle());
@@ -942,7 +928,7 @@ final class SortableTest extends BaseTestCaseORM
         $this->em->remove($node5);
         $this->em->flush();
 
-        $repo = $this->em->getRepository(self::CHAPTER);
+        $repo = $this->em->getRepository(Chapter::class);
         $nodes = $repo->getBySortableGroups(['story' => $story]);
 
         static::assertSame('Node1', $nodes[0]->getTitle());
@@ -961,7 +947,7 @@ final class SortableTest extends BaseTestCaseORM
         $this->em->remove($node1);
         $this->em->flush();
 
-        $repo = $this->em->getRepository(self::CHAPTER);
+        $repo = $this->em->getRepository(Chapter::class);
         $nodes = $repo->getBySortableGroups(['story' => $story]);
 
         static::assertSame('Node4', $nodes[0]->getTitle());
@@ -1019,7 +1005,7 @@ final class SortableTest extends BaseTestCaseORM
         $story2->setSeries($series2);
         $this->em->flush();
 
-        $repo = $this->em->getRepository(self::STORY);
+        $repo = $this->em->getRepository(Story::class);;
         $nodes = $repo->getBySortableGroups(['series' => $series2]);
 
         static::assertCount(2, $nodes);
@@ -1032,22 +1018,22 @@ final class SortableTest extends BaseTestCaseORM
     protected function getUsedEntityFixtures(): array
     {
         $fixtures = [
-            self::NODE,
-            self::ITEM,
-            self::CATEGORY,
-            self::SIMPLE_LIST_ITEM,
-            self::AUTHOR,
-            self::PAPER,
-            self::EVENT,
-            self::CUSTOMER,
-            self::CUSTOMER_TYPE,
-            self::SERIES,
-            self::STORY,
-            self::CHAPTER,
+            Node::class,
+            Item::class,
+            Category::class,
+            SimpleListItem::class,
+            Author::class,
+            Paper::class,
+            Event::class,
+            Customer::class,
+            CustomerType::class,
+            Series::class,
+            Story::class,
+            Chapter::class,
         ];
 
         if (class_exists(AnnotationDriver::class)) {
-            $fixtures[] = self::NOTIFY_NODE;
+            $fixtures[] = NotifyNode::class;
         }
 
         return $fixtures;

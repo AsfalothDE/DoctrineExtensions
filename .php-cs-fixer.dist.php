@@ -28,13 +28,12 @@ $finder = PhpCsFixer\Finder::create()
     ]);
 
 return (new PhpCsFixer\Config())
+    ->setParallelConfig(PhpCsFixer\Runner\Parallel\ParallelConfigFactory::detect())
     ->setRules([
         '@DoctrineAnnotation' => true,
-        '@PHP71Migration' => true,
-        '@PHP71Migration:risky' => true,
         '@PHP74Migration' => true,
         '@PHP74Migration:risky' => true,
-        '@PHPUnit84Migration:risky' => true,
+        '@PHPUnit91Migration:risky' => true,
         '@PSR2' => true,
         '@Symfony' => true,
         'array_syntax' => ['syntax' => 'short'],
@@ -46,16 +45,16 @@ return (new PhpCsFixer\Config())
         'error_suppression' => true,
         'global_namespace_import' => ['import_classes' => false, 'import_constants' => false, 'import_functions' => false],
         'header_comment' => ['header' => $header],
-        'is_null' => false,
+        'is_null' => true,
         'list_syntax' => ['syntax' => 'short'],
         'modernize_types_casting' => true,
         'no_homoglyph_names' => true,
         'no_null_property_initialization' => true,
         'no_superfluous_elseif' => true,
-        'no_superfluous_phpdoc_tags' => false,
+        'no_superfluous_phpdoc_tags' => ['allow_mixed' => true],
         'no_unset_on_property' => true,
         'no_useless_else' => true,
-        'nullable_type_declaration_for_default_null_value' => ['use_nullable_type_declaration' => true],
+        'nullable_type_declaration_for_default_null_value' => true,
         'ordered_class_elements' => true,
         'ordered_imports' => ['sort_algorithm' => 'alpha'],
         'phpdoc_order' => ['order' => ['param', 'throws', 'return']],
@@ -69,7 +68,6 @@ return (new PhpCsFixer\Config())
         'php_unit_construct' => true,
         'php_unit_dedicate_assert' => true,
         'php_unit_dedicate_assert_internal_type' => true,
-        'php_unit_method_casing' => false,
         'php_unit_mock' => true,
         'php_unit_namespaced' => true,
         'php_unit_set_up_tear_down_visibility' => true,
@@ -83,6 +81,11 @@ return (new PhpCsFixer\Config())
         'static_lambda' => true,
         'strict_param' => true,
         'ternary_to_null_coalescing' => true,
+        'trailing_comma_in_multiline' => [
+            'elements' => [
+                'arrays',
+            ],
+        ],
         // @todo: Change the following rule to `true` in the next major release.
         'void_return' => false,
     ])

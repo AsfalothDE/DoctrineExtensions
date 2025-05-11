@@ -124,7 +124,7 @@ class Nested implements Strategy
 
     public function processScheduledInsertion($em, $node, AdapterInterface $ea)
     {
-        /** @var ClassMetadata $meta */
+        /** @var ClassMetadata<object> $meta */
         $meta = $em->getClassMetadata(get_class($node));
         $config = $this->listener->getConfiguration($em, $meta->getName());
 
@@ -279,7 +279,7 @@ class Nested implements Strategy
     {
         $wrapped = AbstractWrapper::wrap($node, $em);
 
-        /** @var ClassMetadata $meta */
+        /** @var ClassMetadata<object> $meta */
         $meta = $wrapped->getMetadata();
         $config = $this->listener->getConfiguration($em, $meta->getName());
 
@@ -626,8 +626,17 @@ class Nested implements Strategy
 
                 $nodeMeta = $em->getClassMetadata(get_class($node));
 
-                if (!array_key_exists($config['left'], $nodeMeta->getReflectionProperties())) {
-                    continue;
+                if (property_exists($nodeMeta, 'propertyAccessors')) {
+                    // ORM 3.4+
+                    /** @phpstan-ignore-next-line method.NotFound Method introduced in ORM 3.4 */
+                    if (!array_key_exists($config['left'], $nodeMeta->getPropertyAccessors())) {
+                        continue;
+                    }
+                } else {
+                    // ORM 3.3-
+                    if (!array_key_exists($config['left'], $nodeMeta->getReflectionProperties())) {
+                        continue;
+                    }
                 }
 
                 $oid = spl_object_id($node);
@@ -717,8 +726,17 @@ class Nested implements Strategy
 
                 $nodeMeta = $em->getClassMetadata(get_class($node));
 
-                if (!array_key_exists($config['left'], $nodeMeta->getReflectionProperties())) {
-                    continue;
+                if (property_exists($nodeMeta, 'propertyAccessors')) {
+                    // ORM 3.4+
+                    /** @phpstan-ignore-next-line method.NotFound Method introduced in ORM 3.4 */
+                    if (!array_key_exists($config['left'], $nodeMeta->getPropertyAccessors())) {
+                        continue;
+                    }
+                } else {
+                    // ORM 3.3-
+                    if (!array_key_exists($config['left'], $nodeMeta->getReflectionProperties())) {
+                        continue;
+                    }
                 }
 
                 $left = $meta->getReflectionProperty($config['left'])->getValue($node);

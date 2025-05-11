@@ -45,9 +45,7 @@ use Gedmo\Translatable\Mapping\Event\TranslatableAdapter;
  *   useObjectClass?: class-string,
  * }
  *
- * @phpstan-method TranslatableConfiguration getConfiguration(ObjectManager $objectManager, $class)
- *
- * @method TranslatableAdapter getEventAdapter(EventArgs $args)
+ * @phpstan-extends MappedEventSubscriber<TranslatableConfiguration, TranslatableAdapter>
  *
  * @final since gedmo/doctrine-extensions 3.11
  */
@@ -331,9 +329,9 @@ class TranslatableListener extends MappedEventSubscriber
      * Gets the locale to use for translation. Loads object
      * defined locale first.
      *
-     * @param object        $object
-     * @param ClassMetadata $meta
-     * @param object        $om
+     * @param object                $object
+     * @param ClassMetadata<object> $meta
+     * @param object                $om
      *
      * @throws RuntimeException if language or locale property is not found in entity
      *

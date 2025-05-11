@@ -11,7 +11,6 @@ namespace Gedmo\Sortable;
 
 use Doctrine\Common\Comparable;
 use Doctrine\Common\EventArgs;
-use Doctrine\Common\Util\ClassUtils;
 use Doctrine\Deprecations\Deprecation;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Doctrine\Persistence\Event\LoadClassMetadataEventArgs;
@@ -20,6 +19,7 @@ use Doctrine\Persistence\Mapping\ClassMetadata;
 use Doctrine\Persistence\ObjectManager;
 use Gedmo\Mapping\MappedEventSubscriber;
 use Gedmo\Sortable\Mapping\Event\SortableAdapter;
+use Gedmo\Tool\ClassUtils;
 use ProxyManager\Proxy\GhostObjectInterface;
 
 /**
@@ -50,9 +50,7 @@ use ProxyManager\Proxy\GhostObjectInterface;
  *   }>,
  * }
  *
- * @phpstan-method SortableConfiguration getConfiguration(ObjectManager $objectManager, $class)
- *
- * @method SortableAdapter getEventAdapter(EventArgs $args)
+ * @phpstan-extends MappedEventSubscriber<SortableConfiguration, SortableAdapter>
  *
  * @final since gedmo/doctrine-extensions 3.11
  */
@@ -353,9 +351,11 @@ class SortableListener extends MappedEventSubscriber
     /**
      * Computes node positions and updates the sort field in memory and in the db
      *
-     * @param array<string, mixed> $config
-     * @param ClassMetadata        $meta
-     * @param object               $object
+     * @param array<string, mixed>  $config
+     * @param ClassMetadata<object> $meta
+     * @param object                $object
+     *
+     * @phpstan-param SortableConfiguration $config
      *
      * @return void
      */
@@ -423,9 +423,11 @@ class SortableListener extends MappedEventSubscriber
     /**
      * Computes node positions and updates the sort field in memory and in the db
      *
-     * @param array<string, mixed> $config
-     * @param ClassMetadata        $meta
-     * @param object               $object
+     * @param array<string, mixed>  $config
+     * @param ClassMetadata<object> $meta
+     * @param object                $object
+     *
+     * @phpstan-param SortableConfiguration $config
      *
      * @return void
      */
@@ -575,9 +577,11 @@ class SortableListener extends MappedEventSubscriber
     /**
      * Computes node positions and updates the sort field in memory and in the db
      *
-     * @param array<string, mixed> $config
-     * @param ClassMetadata        $meta
-     * @param object               $object
+     * @param array<string, mixed>  $config
+     * @param ClassMetadata<object> $meta
+     * @param object                $object
+     *
+     * @phpstan-param SortableConfiguration $config
      *
      * @return void
      */
@@ -631,6 +635,8 @@ class SortableListener extends MappedEventSubscriber
      * @param array<string, mixed> $groups
      * @param array<string, mixed> $config
      *
+     * @phpstan-param SortableConfiguration $config
+     *
      * @return string
      */
     protected function getHash($groups, array $config)
@@ -649,10 +655,12 @@ class SortableListener extends MappedEventSubscriber
     }
 
     /**
-     * @param ClassMetadata        $meta
-     * @param array<string, mixed> $config
-     * @param object               $object
-     * @param array<string, mixed> $groups
+     * @param ClassMetadata<object> $meta
+     * @param array<string, mixed>  $config
+     * @param object                $object
+     * @param array<string, mixed>  $groups
+     *
+     * @phpstan-param SortableConfiguration $config
      *
      * @return ?int
      */
@@ -742,9 +750,11 @@ class SortableListener extends MappedEventSubscriber
     }
 
     /**
-     * @param ClassMetadata                        $meta
+     * @param ClassMetadata<object>                $meta
      * @param array<string, array<string, string>> $config
      * @param object                               $object
+     *
+     * @phpstan-param SortableConfiguration $config
      *
      * @return array<string, mixed>
      */

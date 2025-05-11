@@ -23,12 +23,17 @@ use Gedmo\Sortable\Traits\Repository\ORM\SortableRepositoryTrait;
  *
  * @author Lukas Botsch <lukas.botsch@gmail.com>
  *
- * @phpstan-extends EntityRepository<object>
+ * @template T of object
+ *
+ * @template-extends EntityRepository<T>
  */
 class SortableRepository extends EntityRepository
 {
     use SortableRepositoryTrait;
 
+    /**
+     * @param ClassMetadata<T> $class
+     */
     public function __construct(EntityManagerInterface $em, ClassMetadata $class)
     {
         parent::__construct($em, $class);

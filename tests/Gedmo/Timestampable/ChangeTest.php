@@ -13,6 +13,7 @@ namespace Gedmo\Tests\Timestampable;
 
 use Doctrine\Common\EventArgs;
 use Doctrine\Common\EventManager;
+use Doctrine\Persistence\Mapping\ClassMetadata;
 use Gedmo\AbstractTrackingListener;
 use Gedmo\Mapping\Event\Adapter\ORM as BaseAdapterORM;
 use Gedmo\Tests\Timestampable\Fixture\TitledArticle;
@@ -26,8 +27,6 @@ use Gedmo\Timestampable\Mapping\Event\TimestampableAdapter;
  */
 final class ChangeTest extends BaseTestCaseORM
 {
-    private const FIXTURE = TitledArticle::class;
-
     /**
      * @var TimestampableListenerStub
      */
@@ -60,7 +59,7 @@ final class ChangeTest extends BaseTestCaseORM
         $this->em->flush();
         $this->em->clear();
 
-        $test = $this->em->getRepository(self::FIXTURE)->findOneBy(['title' => 'Test']);
+        $test = $this->em->getRepository(TitledArticle::class)->findOneBy(['title' => 'Test']);
         $test->setTitle('New Title');
         $test->setState('Closed');
         $this->em->persist($test);
@@ -79,7 +78,7 @@ final class ChangeTest extends BaseTestCaseORM
         $anotherDate = \DateTime::createFromFormat('Y-m-d H:i:s', '2000-01-01 00:00:00');
         $this->listener->eventAdapter->setDateValue($anotherDate);
 
-        $test = $this->em->getRepository(self::FIXTURE)->findOneBy(['title' => 'New Title']);
+        $test = $this->em->getRepository(TitledArticle::class)->findOneBy(['title' => 'New Title']);
         $test->setText('New Text');
         $test->setState('Open');
         $this->em->persist($test);
@@ -95,7 +94,7 @@ final class ChangeTest extends BaseTestCaseORM
             $test->getClosed()->format('Y-m-d H:i:s')
         );
 
-        $test = $this->em->getRepository(self::FIXTURE)->findOneBy(['title' => 'New Title']);
+        $test = $this->em->getRepository(TitledArticle::class)->findOneBy(['title' => 'New Title']);
         $test->setState('Published');
         $this->em->persist($test);
         $this->em->flush();
@@ -110,7 +109,7 @@ final class ChangeTest extends BaseTestCaseORM
     protected function getUsedEntityFixtures(): array
     {
         return [
-            self::FIXTURE,
+            TitledArticle::class,
         ];
     }
 }
@@ -124,12 +123,18 @@ final class EventAdapterORMStub extends BaseAdapterORM implements TimestampableA
         $this->dateTime = $dateTime;
     }
 
+    /**
+     * @param ClassMetadata<object> $meta
+     */
     public function getDateValue($meta, $field): ?\DateTime
     {
         return $this->dateTime;
     }
 }
 
+/**
+ * @phpstan-extends AbstractTrackingListener<array, TimestampableAdapter>
+ */
 final class TimestampableListenerStub extends AbstractTrackingListener
 {
     /**
@@ -145,7 +150,8 @@ final class TimestampableListenerStub extends AbstractTrackingListener
     }
 
     /**
-     * @param EventAdapterORMStub $eventAdapter
+     * @param ClassMetadata<object> $meta
+     * @param EventAdapterORMStub   $eventAdapter
      */
     protected function getFieldValue($meta, $field, $eventAdapter)
     {

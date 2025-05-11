@@ -13,6 +13,7 @@ use Doctrine\Common\EventArgs;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Types\Type as TypeODM;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\UnitOfWork;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Doctrine\Persistence\Event\LoadClassMetadataEventArgs;
@@ -26,6 +27,11 @@ use Gedmo\Mapping\MappedEventSubscriber;
 
 /**
  * The AbstractTrackingListener provides generic functions for all listeners.
+ *
+ * @template TConfig of array
+ * @template TEventAdapter of AdapterInterface
+ *
+ * @template-extends MappedEventSubscriber<TConfig, TEventAdapter>
  *
  * @author Gediminas Morkevicius <gediminas.morkevicius@gmail.com>
  */
@@ -201,9 +207,9 @@ abstract class AbstractTrackingListener extends MappedEventSubscriber
     /**
      * Get the value for an updated field.
      *
-     * @param ClassMetadata    $meta
-     * @param string           $field
-     * @param AdapterInterface $eventAdapter
+     * @param ClassMetadata<object> $meta
+     * @param string                $field
+     * @param TEventAdapter         $eventAdapter
      *
      * @return mixed
      */
@@ -212,10 +218,10 @@ abstract class AbstractTrackingListener extends MappedEventSubscriber
     /**
      * Updates a field.
      *
-     * @param object           $object
-     * @param AdapterInterface $eventAdapter
-     * @param ClassMetadata    $meta
-     * @param string           $field
+     * @param object                $object
+     * @param TEventAdapter         $eventAdapter
+     * @param ClassMetadata<object> $meta
+     * @param string                $field
      *
      * @return void
      */
@@ -267,9 +273,13 @@ abstract class AbstractTrackingListener extends MappedEventSubscriber
                     } else {
                         $values[$i] = $value;
                     }
-                } elseif (Type::hasType($type)) {
-                    $values[$i] = Type::getType($type)
-                        ->convertToPHPValue($value, $om->getConnection()->getDatabasePlatform());
+                } elseif ($om instanceof EntityManagerInterface) {
+                    if (Type::hasType($type)) {
+                        $values[$i] = $om->getConnection()
+                            ->convertToPHPValue($value, $type);
+                    } else {
+                        $values[$i] = $value;
+                    }
                 }
             }
         }

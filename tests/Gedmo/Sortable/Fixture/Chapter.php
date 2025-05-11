@@ -91,7 +91,7 @@ class Chapter
      *
      * @return Chapter
      */
-    public function setStory(Story $story = null)
+    public function setStory(?Story $story = null)
     {
         $this->story = $story;
 

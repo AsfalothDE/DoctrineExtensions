@@ -12,10 +12,6 @@ namespace Gedmo\Sortable\Entity\Repository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
-use Doctrine\ORM\Query;
-use Doctrine\ORM\QueryBuilder;
-use Gedmo\Exception\InvalidMappingException;
-use Gedmo\Sortable\SortableListener;
 use Gedmo\Sortable\Traits\Repository\ORM\SortableRepositoryTrait;
 
 /**

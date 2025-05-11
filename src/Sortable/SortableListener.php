@@ -661,8 +661,6 @@ class SortableListener extends MappedEventSubscriber
      * @param array<string, mixed>  $groups
      *
      * @phpstan-param SortableConfiguration $config
-     *
-     * @return ?int
      */
     protected function getMaxPosition(SortableAdapter $ea, $meta, $config, $object, array $groups = []): ?int
     {

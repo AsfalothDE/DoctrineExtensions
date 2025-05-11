@@ -1005,7 +1005,7 @@ final class SortableTest extends BaseTestCaseORM
         $story2->setSeries($series2);
         $this->em->flush();
 
-        $repo = $this->em->getRepository(Story::class);;
+        $repo = $this->em->getRepository(Story::class);
         $nodes = $repo->getBySortableGroups(['series' => $series2]);
 
         static::assertCount(2, $nodes);

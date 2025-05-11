@@ -17,7 +17,6 @@ use Doctrine\ORM\QueryBuilder;
 use Gedmo\Exception\InvalidArgumentException;
 use Gedmo\Exception\InvalidMappingException;
 use Gedmo\Tool\Wrapper\EntityWrapper;
-use Gedmo\Tree\Entity\Repository\AbstractTreeRepository;
 use Gedmo\Tree\RepositoryUtils;
 use Gedmo\Tree\RepositoryUtilsInterface;
 use Gedmo\Tree\TreeListener;
@@ -140,7 +139,7 @@ trait TreeRepositoryTrait
     }
 
     /**
-     * @see \Gedmo\Tree\RepositoryUtilsInterface::childrenHierarchy
+     * @see RepositoryUtilsInterface::childrenHierarchy
      */
     public function childrenHierarchy($node = null, $direct = false, array $options = [], $includeNode = false)
     {
@@ -148,7 +147,7 @@ trait TreeRepositoryTrait
     }
 
     /**
-     * @see \Gedmo\Tree\RepositoryUtilsInterface::buildTree
+     * @see RepositoryUtilsInterface::buildTree
      */
     public function buildTree(array $nodes, array $options = [])
     {
@@ -156,7 +155,7 @@ trait TreeRepositoryTrait
     }
 
     /**
-     * @see \Gedmo\Tree\RepositoryUtilsInterface::buildTreeArray
+     * @see RepositoryUtilsInterface::buildTreeArray
      */
     public function buildTreeArray(array $nodes)
     {
@@ -164,7 +163,7 @@ trait TreeRepositoryTrait
     }
 
     /**
-     * @see \Gedmo\Tree\RepositoryUtilsInterface::setChildrenIndex
+     * @see RepositoryUtilsInterface::setChildrenIndex
      */
     public function setChildrenIndex($childrenIndex)
     {
@@ -172,7 +171,7 @@ trait TreeRepositoryTrait
     }
 
     /**
-     * @see \Gedmo\Tree\RepositoryUtilsInterface::getChildrenIndex
+     * @see RepositoryUtilsInterface::getChildrenIndex
      */
     public function getChildrenIndex()
     {

@@ -11,9 +11,6 @@ namespace Gedmo\Tree\Entity\Repository;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
-use Doctrine\ORM\Query;
-use Doctrine\ORM\QueryBuilder;
-use Gedmo\Tool\Wrapper\EntityWrapper;
 use Gedmo\Tree\Strategy;
 use Gedmo\Tree\Traits\Repository\ORM\MaterializedPathRepositoryTrait;
 

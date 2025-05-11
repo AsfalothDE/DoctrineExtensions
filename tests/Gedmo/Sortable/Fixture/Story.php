@@ -43,6 +43,7 @@ class Story
 
     /**
      * @var Collection
+     *
      * @ORM\OneToMany(targetEntity="Chapter", mappedBy="story")
      * @ORM\OrderBy({"number" = "ASC"})
      */
@@ -103,22 +104,19 @@ class Story
         $this->chapters->removeElement($chapter);
     }
 
-    /**
-     * @return Series|null
-     */
     public function getSeries(): ?Series
     {
         return $this->series;
     }
 
-    public function setSeries(Series $series): Story
+    public function setSeries(Series $series): self
     {
         $this->series = $series;
 
         return $this;
     }
 
-    public function setVolume(?int $volume): Story
+    public function setVolume(?int $volume): self
     {
         $this->volume = $volume;
 
